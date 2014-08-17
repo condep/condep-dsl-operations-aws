@@ -30,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\ConDep.Dsl.Operations.Aws.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AWSSDK, Version=2.2.3.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
