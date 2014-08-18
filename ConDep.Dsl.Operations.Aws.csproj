@@ -21,7 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\ConDep.Dsl.Operations.Aws.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\ConDep.Dsl.Operations.Aws.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -68,6 +68,7 @@
     <Compile Include="Bootstrap\AwsBootstrapInputValues.cs" />
     <Compile Include="Bootstrap\AwsBootstrapMandatoryConfig.cs" />
     <Compile Include="Bootstrap\AwsBootstrapOperation.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapOperations.cs" />
     <Compile Include="Bootstrap\AwsBootstrapVolumeType.cs" />
     <Compile Include="Bootstrap\AwsInstanceType.cs" />
     <Compile Include="Bootstrap\AwsShutdownBehavior.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="Bootstrap\IOfferAwsBootstrapOperations.cs" />
     <Compile Include="Bootstrap\IOfferAwsBootstrapOptions.cs" />
     <Compile Include="Bootstrap\IOfferAwsBootstrapPrivateIpsOptions.cs" />
-    <Compile Include="Bootstrap\IOfferAwsBootstrapSecurityGroupsOptions.cs" />
     <Compile Include="Bootstrap\IOfferAwsBootstrapUserDataOptions.cs" />
     <Compile Include="Bootstrap\OperationConfigException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

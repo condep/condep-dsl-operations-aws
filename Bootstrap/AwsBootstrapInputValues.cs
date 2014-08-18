@@ -2,9 +2,18 @@ using System.Collections.Generic;
 
 namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
-    public class AwsBootstrapInputValues
+    internal class AwsBootstrapInputValues
     {
         private readonly AwsBootstrapImageValues _image = new AwsBootstrapImageValues();
+        private readonly List<AwsDisk> _disks = new List<AwsDisk>();
+
+        public AwsBootstrapInputValues()
+        {
+            InstanceType = "t2.micro";
+            InstanceCountMin = 1;
+            InstanceCountMax = 1;
+        }
+
         public string InstanceType { get; set; }
         public int InstanceCountMin { get; set; }
         public int InstanceCountMax { get; set; }
@@ -16,9 +25,12 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
         public List<string> SecurityGroupIds { get; set; }
         public AwsBootstrapImageValues Image {get { return _image; }}
         public RemoteManagementConnectionType? RemoteManagementConnectionType { get; set; }
+        public string UserData { get; set; }
+        public List<AwsDisk> Disks { get { return _disks; } }
+        public List<AwsNetworkInterfaceValues> NetworkInterfaces { get; set; }
     }
 
-    public class AwsBootstrapImageValues
+    internal class AwsBootstrapImageValues
     {
         public AwsWindowsImage? LatestImage { get; set; }
         public string Id { get; set; }

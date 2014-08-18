@@ -5,14 +5,13 @@ using System.Text;
 using System.Threading;
 using Amazon.EC2;
 using Amazon.EC2.Model;
-using Amazon.RDS.Model;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
 using Filter = Amazon.EC2.Model.Filter;
 
 namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 {
-    public class Ec2InstanceHandler
+    internal class Ec2InstanceHandler
     {
         private readonly IAmazonEC2 _client;
 
@@ -62,28 +61,52 @@ netsh advfirewall firewall add rule name=""WinRM Public in"" protocol=TCP dir=in
             {
                 ImageId = options.Image.Id,
                 ClientToken = boostrapId,
-                InstanceType = "t2.micro",
-                MinCount = options.InstanceCountMin > 0 ? options.InstanceCountMin : 1,
-                MaxCount = options.InstanceCountMax > 0 ? options.InstanceCountMax : 1,
+                InstanceType = options.InstanceType,
+                MinCount = options.InstanceCountMin,
+                MaxCount = options.InstanceCountMax,
                 KeyName = mandatoryOption.PublicKeyName,
                 UserData = Convert.ToBase64String(Encoding.UTF8.GetBytes(userData)),
                 SubnetId = mandatoryOption.SubnetId,
-                SecurityGroupIds = options.SecurityGroupIds
-                //NetworkInterfaces = new List<InstanceNetworkInterfaceSpecification>
-                //{
-                //    new InstanceNetworkInterfaceSpecification
-                //    {
-                //        AssociatePublicIpAddress = true,
-                //        DeviceIndex = 0,
-                //        SubnetId = "subnet-7eba6d1b",
-                //        Groups = new List<string>
-                //        {
-                //            securityGroupId
-                //        },
-                //        DeleteOnTermination = true,
-                //    }
-                //},
+                SecurityGroupIds = options.SecurityGroupIds,
+                //AdditionalInfo = options.
+                BlockDeviceMappings = new List<BlockDeviceMapping>(),
+                //EbsOptimized = 
+                //IamInstanceProfile = options.ia
+                //InstanceInitiatedShutdownBehavior = options.in
+                Monitoring = options.Monitor,
+                InstanceInitiatedShutdownBehavior = new ShutdownBehavior(options.ShutdownBehavior.ToString()),
+                NetworkInterfaces = new List<InstanceNetworkInterfaceSpecification>()
+
             };
+
+            foreach (var disk in options.Disks)
+            {
+                var mapping = new BlockDeviceMapping();
+                switch (disk.DeviceType)
+                {
+                    case AwsDiskType.InstanceStoreVolume:
+                        mapping.DeviceName = disk.DeviceName;
+                        mapping.NoDevice = disk.DeviceToSupressFromImage;
+                        mapping.VirtualName = disk.VirtualName;
+                        break;
+                    case AwsDiskType.Ebs:
+                        mapping.DeviceName = disk.DeviceName;
+                        mapping.NoDevice = disk.DeviceToSupressFromImage;
+                        if (disk.Ebs != null)
+                        {
+                            mapping.Ebs = new EbsBlockDevice
+                            {
+                                DeleteOnTermination = disk.Ebs.DeleteOnTermination,
+                                Encrypted = disk.Ebs.Encrypted,
+                                Iops = disk.Ebs.Iops,
+                                SnapshotId = disk.Ebs.SnapshotId,
+                                VolumeSize = disk.Ebs.VolumeSize,
+                                VolumeType = disk.Ebs.VolumeType
+                            };
+                        }
+                        break;
+                }
+            }
 
             RunInstancesResponse runResponse = _client.RunInstances(runInstancesRequest);
             return runResponse.Reservation.Instances.Select(x => x.InstanceId);

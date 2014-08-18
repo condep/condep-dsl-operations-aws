@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using Amazon;
 using Amazon.EC2;
-using Amazon.EC2.Model;
 using Amazon.Runtime;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
 
 namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 {
-    public class Ec2Bootstrapper
+    internal class Ec2Bootstrapper
     {
         private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
         private AwsBootstrapInputValues _options;

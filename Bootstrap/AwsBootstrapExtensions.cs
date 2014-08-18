@@ -92,7 +92,7 @@ namespace ConDep.Dsl
         /// </summary>
         /// <param name="bootstrap"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
-        /// <param name="mandatoryConfig">Mandatory configuration options for bootstrapping instances.</param>
+        /// <param name="mandatoryConfig">Mandatory configuration for bootstrapping instances.</param>
         /// <returns></returns>
         public static IOfferAwsBootstrapOperations VpcInstance(this IOfferAwsBootstrapOperations bootstrap, string bootstrapId, Action<IOfferAwsBootstrapMandatoryConfig> mandatoryConfig)
         {
@@ -113,7 +113,7 @@ namespace ConDep.Dsl
         /// </summary>
         /// <param name="bootstrap"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
-        /// <param name="mandatoryConfig">Mandatory configuration options for bootstrapping instances.</param>
+        /// <param name="mandatoryConfig">Mandatory configuration for bootstrapping instances.</param>
         /// <param name="options">Additional configuration options for bootstrapping instances.</param>
         /// <returns></returns>
         public static IOfferAwsBootstrapOperations VpcInstance(this IOfferAwsBootstrapOperations bootstrap, string bootstrapId, Action<IOfferAwsBootstrapMandatoryConfig> mandatoryConfig, Action<IOfferAwsBootstrapOptions> options)
@@ -127,11 +127,6 @@ namespace ConDep.Dsl
             var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values, instanceOptions.Values);
             Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
-        }
-
-        public static IOfferAwsBootstrapOperations VpcSecurityGroup(this IOfferAwsBootstrapOperations awsBootstrap)
-        {
-            return awsBootstrap;
         }
     }
 }

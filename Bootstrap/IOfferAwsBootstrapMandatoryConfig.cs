@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
+namespace ConDep.Dsl
 {
     public interface IOfferAwsBootstrapMandatoryConfig
     {

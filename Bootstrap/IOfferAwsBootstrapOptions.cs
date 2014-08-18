@@ -27,17 +27,29 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
         PrivateIp
     }
 
-    public class AwsBootstrapOptions : IOfferAwsBootstrapOptions
+    internal class AwsBootstrapOptions : IOfferAwsBootstrapOptions
     {
         private readonly AwsBootstrapInputValues _values = new AwsBootstrapInputValues();
+        private readonly IOfferAwsBootstrapImageOptions _image;
+        private readonly IOfferAwsBootstrapUserDataOptions _userData;
+        private readonly IOfferAwsBootstrapNetworkInterfacesOptions _networkInterfaces;
+        private readonly IOfferAwsBootstrapDisksOptions _disks;
 
-        public IOfferAwsBootstrapImageOptions Image { get; private set; }
+        public AwsBootstrapOptions()
+        {
+            _image = new AwsBootstrapImageOptions(_values, this);
+            _userData = new AwsBootstrapUserDataOptions(_values, this);
+            _networkInterfaces = new AwsBootstrapNetworkInterfacesOptions(_values, this);
+            _disks = new AwsBootstrapDisksOptions(_values, this);
+        }
 
-        public IOfferAwsBootstrapUserDataOptions UserData { get; private set; }
+        public IOfferAwsBootstrapImageOptions Image { get { return _image; } }
 
-        public IOfferAwsBootstrapNetworkInterfacesOptions NetworkInterfaces { get; private set; }
+        public IOfferAwsBootstrapUserDataOptions UserData { get { return _userData; } }
 
-        public IOfferAwsBootstrapDisksOptions Disks { get; private set; }
+        public IOfferAwsBootstrapNetworkInterfacesOptions NetworkInterfaces { get { return _networkInterfaces; } }
+
+        public IOfferAwsBootstrapDisksOptions Disks { get { return _disks; } }
 
         public IOfferAwsBootstrapOptions InstanceType(string instanceType)
         {

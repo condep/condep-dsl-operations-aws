@@ -12,7 +12,7 @@ using Microsoft.CSharp.RuntimeBinder;
 
 namespace ConDep.Dsl.Operations.Aws.Bootstrap
 {
-    public class AwsBootstrapOperation : LocalOperation
+    internal class AwsBootstrapOperation : LocalOperation
     {
         private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
         private readonly AwsBootstrapInputValues _options;
