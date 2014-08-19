@@ -53,6 +53,8 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 
         public IEnumerable<string> CreateInstances(string boostrapId, AwsBootstrapMandatoryInputValues mandatoryOption, RunInstancesRequest request)
         {
+            request.ClientToken = boostrapId;
+            request.KeyName = mandatoryOption.PublicKeyName;
             RunInstancesResponse runResponse = _client.RunInstances(request);
 
             return runResponse.Reservation.Instances.Select(x => x.InstanceId);
@@ -60,13 +62,13 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 
         public void WaitForInstancesStatus(IEnumerable<string> instanceIds, Ec2InstanceState state)
         {
+            Thread.Sleep(15000);
             var instances = GetInstances(instanceIds).ToList();
             var states = instances.Select(y => y.State);
 
             if (states.Any(x => x.Code != (int)state))
             {
                 Logger.Info("One or more instances is not in state {0}, waiting 15 seconds...", state.ToString());
-                Thread.Sleep(15000);
                 WaitForInstancesStatus(instanceIds, state);
             }
         }

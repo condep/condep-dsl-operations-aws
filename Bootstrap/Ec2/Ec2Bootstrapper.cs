@@ -9,6 +9,7 @@ using Amazon.EC2.Model;
 using Amazon.Runtime;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
+using ConDep.Dsl.Validation;
 
 namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 {
@@ -46,31 +47,14 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 
             if (_instanceHandler.AllreadyBootstrapped(_mandatoryOptions.BootstrapId))
             {
-                Logger.Info("Allready bootstrapped. Getting server information.");
-                var existingInstances = _instanceHandler.GetInstances(_mandatoryOptions.BootstrapId).ToList();
-
-                var existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId), _mandatoryOptions.PrivateKeyFileLocation);
-
-                foreach (var instance in existingInstances)
-                {
-                    config.Instances.Add(new Ec2Instance
-                    {
-                        InstanceId = instance.InstanceId,
-                        UserName = "Administrator",
-                        Password = existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
-                        AwsInstance = instance
-                    });
-                }
-                return config;
+                return GetConfigFromExisting(config);
             }
 
-            //Logger.Info("Creating security group...");
-            //var securityGroupId = _securityGroupHandler.CreateSecurityGroup(vpcId, config.BootstrapId);
-            //var securityGroupTag = _tagHandler.CreateNameTags(config.BootstrapId, new[] { securityGroupId });
+            return BootstrapNew(config);
+        }
 
-            //config.SecurityGroupId = securityGroupId;
-            //config.SecurityGroupTag = securityGroupTag;
-
+        private Ec2BootstrapConfig BootstrapNew(Ec2BootstrapConfig config)
+        {
             var amiLocator = new Ec2AmiLocator(_client);
             var imageValues = ((AwsBootstrapImageOptions) _options.Image).Values;
 
@@ -108,14 +92,13 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
 
             //Logger.Info("Tagging instances.            //var instanceTag = _tagHandler.CreateNameTags(config.BootstrapId, instanceIds);
 
-            Logger.WithLogSection("Waiting for instances to be ready", () => _instanceHandler.WaitForInstancesStatus(instanceIds, Ec2InstanceState.Running));
+            Logger.WithLogSection("Waiting for instances to be ready",
+                () => _instanceHandler.WaitForInstancesStatus(instanceIds, Ec2InstanceState.Running));
 
             List<Tuple<string, string>> passwords = null;
 
-            Logger.WithLogSection("Waiting for Windows password to be available", () =>
-            {
-                passwords = _passwordHandler.WaitForPassword(instanceIds, _mandatoryOptions.PrivateKeyFileLocation);
-            });
+            Logger.WithLogSection("Waiting for Windows password to be available",
+                () => { passwords = _passwordHandler.WaitForPassword(instanceIds, _mandatoryOptions.PrivateKeyFileLocation); });
 
             var instances = _instanceHandler.GetInstances(instanceIds).ToList();
 
@@ -153,6 +136,28 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
             return config;
         }
 
+        private Ec2BootstrapConfig GetConfigFromExisting(Ec2BootstrapConfig config)
+        {
+            Logger.Info("Allready bootstrapped. Getting server information.");
+            var existingInstances = _instanceHandler.GetInstances(_mandatoryOptions.BootstrapId).ToList();
+
+            var existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId),
+                _mandatoryOptions.PrivateKeyFileLocation);
+
+            foreach (var instance in existingInstances)
+            {
+                config.Instances.Add(new Ec2Instance
+                {
+                    InstanceId = instance.InstanceId,
+                    UserName = "Administrator",
+                    Password = existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
+                    AwsInstance = instance,
+                    ManagementAddress = GetManagementAddress(_options, instance)
+                });
+            }
+            return config;
+        }
+
         private string GetManagementAddress(AwsBootstrapOptions options, Instance instance)
         {
             var mngmntInterface = GetManagementInterface(options, instance);
@@ -162,10 +167,13 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
                 switch (options.ManagementAddressType)
                 {
                     case RemoteManagementAddressType.PublicDns:
+                        if(mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicDnsName)) throw new ConDepInvalidSetupException("Instance has no public DNS name.");
                         return mngmntInterface.Association.PublicDnsName;
                     case RemoteManagementAddressType.PublicIp:
+                        if(mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicIp)) throw new ConDepInvalidSetupException("Instance has no public IP.");
                         return mngmntInterface.Association.PublicIp;
                     case RemoteManagementAddressType.PrivateDns:
+                        if(string.IsNullOrWhiteSpace(mngmntInterface.PrivateDnsName)) throw new ConDepInvalidSetupException("Instance has no private DNS name.");
                         return mngmntInterface.PrivateDnsName;
                     case RemoteManagementAddressType.PrivateIp:
                         return mngmntInterface.PrivateIpAddress;
@@ -197,14 +205,6 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
         {
             if (options.Values.NetworkInterfaces.Count > 0)
             {
-                if (options.ManagementAddressType != null)
-                {
-                    throw new ConDepAwsHostNameResolverException(
-                        string.Format(
-                            "You cannot define {0} on root of the instance when you have defined network interfaces. Specify {0} on the network interface directly.",
-                            typeof(RemoteManagementAddressType).Name));
-                }
-
                 if (options.ManagementInterfaceIndex != null)
                 {
                     return instance.NetworkInterfaces[options.ManagementInterfaceIndex.Value];
