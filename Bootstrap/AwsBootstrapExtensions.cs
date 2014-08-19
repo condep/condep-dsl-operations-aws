@@ -78,7 +78,7 @@ namespace ConDep.Dsl
             var instanceOptions = new AwsBootstrapOptions();
             options(instanceOptions);
 
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions, instanceOptions.Values);
+            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions, instanceOptions);
             Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }
@@ -124,7 +124,7 @@ namespace ConDep.Dsl
             var instanceOptions = new AwsBootstrapOptions();
             options(instanceOptions);
 
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values, instanceOptions.Values);
+            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values, instanceOptions);
             Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }

@@ -6,27 +6,49 @@
         IOfferAwsBootstrapOptions WithId(string imageId);
     }
 
-    class AwsBootstrapImageOptions : IOfferAwsBootstrapImageOptions
+    internal class AwsBootstrapImageOptions : IOfferAwsBootstrapImageOptions
     {
-        private readonly AwsBootstrapInputValues _values;
+        private readonly AwsBootstrapImageValues _values;
         private readonly IOfferAwsBootstrapOptions _bootstrapOptions;
 
-        public AwsBootstrapImageOptions(AwsBootstrapInputValues values, IOfferAwsBootstrapOptions bootstrapOptions)
+        public AwsBootstrapImageOptions(IOfferAwsBootstrapOptions bootstrapOptions)
         {
-            _values = values;
+            _values = new AwsBootstrapImageValues();
             _bootstrapOptions = bootstrapOptions;
         }
 
         public IOfferAwsBootstrapOptions LatestBaseWindowsImage(AwsWindowsImage image)
         {
-            _values.Image.LatestImage = image;
+            _values.LatestImage = image;
             return _bootstrapOptions;
         }
 
         public IOfferAwsBootstrapOptions WithId(string imageId)
         {
-            _values.Image.Id = imageId;
+            _values.Id = imageId;
             return _bootstrapOptions;
         }
+
+        public AwsBootstrapImageValues Values
+        {
+            get { return _values; }
+        }
     }
+
+    internal class AwsBootstrapImageValues
+    {
+        public AwsWindowsImage? LatestImage { get; set; }
+        public string Id { get; set; }
+
+        public bool HasImageId()
+        {
+            return !string.IsNullOrWhiteSpace(Id);
+        }
+
+        public bool HasLatestImageDefined()
+        {
+            return !HasImageId() && LatestImage.HasValue;
+        }
+    }
+
 }

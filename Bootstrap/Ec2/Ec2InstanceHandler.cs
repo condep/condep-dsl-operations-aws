@@ -51,64 +51,10 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
             return instances.Reservations.SelectMany(x => x.Instances);
         }
 
-        public IEnumerable<string> CreateInstances(string boostrapId, AwsBootstrapMandatoryInputValues mandatoryOption, AwsBootstrapInputValues options)
+        public IEnumerable<string> CreateInstances(string boostrapId, AwsBootstrapMandatoryInputValues mandatoryOption, RunInstancesRequest request)
         {
-            const string userData = @"<powershell>
-netsh advfirewall firewall add rule name=""WinRM Public in"" protocol=TCP dir=in profile=any localport=5985 remoteip=any localip=any action=allow
-</powershell>";
+            RunInstancesResponse runResponse = _client.RunInstances(request);
 
-            var runInstancesRequest = new RunInstancesRequest()
-            {
-                ImageId = options.Image.Id,
-                ClientToken = boostrapId,
-                InstanceType = options.InstanceType,
-                MinCount = options.InstanceCountMin,
-                MaxCount = options.InstanceCountMax,
-                KeyName = mandatoryOption.PublicKeyName,
-                UserData = Convert.ToBase64String(Encoding.UTF8.GetBytes(userData)),
-                SubnetId = mandatoryOption.SubnetId,
-                SecurityGroupIds = options.SecurityGroupIds,
-                //AdditionalInfo = options.
-                BlockDeviceMappings = new List<BlockDeviceMapping>(),
-                //EbsOptimized = 
-                //IamInstanceProfile = options.ia
-                //InstanceInitiatedShutdownBehavior = options.in
-                Monitoring = options.Monitor,
-                InstanceInitiatedShutdownBehavior = new ShutdownBehavior(options.ShutdownBehavior.ToString()),
-                NetworkInterfaces = new List<InstanceNetworkInterfaceSpecification>()
-
-            };
-
-            foreach (var disk in options.Disks)
-            {
-                var mapping = new BlockDeviceMapping();
-                switch (disk.DeviceType)
-                {
-                    case AwsDiskType.InstanceStoreVolume:
-                        mapping.DeviceName = disk.DeviceName;
-                        mapping.NoDevice = disk.DeviceToSupressFromImage;
-                        mapping.VirtualName = disk.VirtualName;
-                        break;
-                    case AwsDiskType.Ebs:
-                        mapping.DeviceName = disk.DeviceName;
-                        mapping.NoDevice = disk.DeviceToSupressFromImage;
-                        if (disk.Ebs != null)
-                        {
-                            mapping.Ebs = new EbsBlockDevice
-                            {
-                                DeleteOnTermination = disk.Ebs.DeleteOnTermination,
-                                Encrypted = disk.Ebs.Encrypted,
-                                Iops = disk.Ebs.Iops,
-                                SnapshotId = disk.Ebs.SnapshotId,
-                                VolumeSize = disk.Ebs.VolumeSize,
-                                VolumeType = disk.Ebs.VolumeType
-                            };
-                        }
-                        break;
-                }
-            }
-
-            RunInstancesResponse runResponse = _client.RunInstances(runInstancesRequest);
             return runResponse.Reservation.Instances.Select(x => x.InstanceId);
         }
 

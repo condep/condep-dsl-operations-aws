@@ -1,40 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
+using Amazon.EC2.Model;
 
 namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
     public interface IOfferAwsBootstrapNetworkInterfacesOptions
     {
-        IOfferAwsBootstrapOptions Add(int index, Action<IOfferAwsBootstrapNetworkInterfaceOptions> network);
+        IOfferAwsBootstrapOptions Add(int index, string subnetId, Action<IOfferAwsBootstrapNetworkInterfaceOptions> network);
         IOfferAwsBootstrapOptions Add(int index, string interfaceId);
     }
 
     internal class AwsBootstrapNetworkInterfacesOptions : IOfferAwsBootstrapNetworkInterfacesOptions
     {
-        private readonly AwsBootstrapInputValues _values;
+        private readonly List<InstanceNetworkInterfaceSpecification> _values;
         private readonly IOfferAwsBootstrapOptions _options;
 
-        public AwsBootstrapNetworkInterfacesOptions(AwsBootstrapInputValues values, IOfferAwsBootstrapOptions options)
+        public AwsBootstrapNetworkInterfacesOptions(List<InstanceNetworkInterfaceSpecification> values, IOfferAwsBootstrapOptions options)
         {
             _values = values;
             _options = options;
         }
 
-        public IOfferAwsBootstrapOptions Add(int index, Action<IOfferAwsBootstrapNetworkInterfaceOptions> network)
+        public IOfferAwsBootstrapOptions Add(int index, string subnetId, Action<IOfferAwsBootstrapNetworkInterfaceOptions> network)
         {
-            var options = new AwsBootstrapNetworkInterfaceOptions(index);
+            var options = new AwsBootstrapNetworkInterfaceOptions(index, subnetId);
             network(options);
 
-            _values.NetworkInterfaces.Add(options.Values);
+            if (options.UseForRemoteManagement)
+            {
+                RemoteManagementInterfaceIndex = index;
+            }
+            _values.Add(options.Values);
             return _options;
         }
 
         public IOfferAwsBootstrapOptions Add(int index, string interfaceId)
         {
-            _values.NetworkInterfaces.Add(new AwsNetworkInterfaceValues(index)
+            _values.Add(new InstanceNetworkInterfaceSpecification
             {
-                InterfaceId = interfaceId
+                DeviceIndex = index,
+                NetworkInterfaceId = interfaceId
             });
             return _options;
         }
+
+        internal int? RemoteManagementInterfaceIndex { get; private set; }
     }
 }

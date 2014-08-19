@@ -1,3 +1,6 @@
+using Amazon.EC2.Model;
+using BlockDeviceMapping = Amazon.AutoScaling.Model.BlockDeviceMapping;
+
 namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
     public interface IOfferAwsBootstrapEbsOptions
@@ -13,9 +16,9 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 
     class AwsBootstrapEbsOptions : IOfferAwsBootstrapEbsOptions
     {
-        private readonly AwsEbsDiskData _values;
+        private readonly EbsBlockDevice _values;
 
-        public AwsBootstrapEbsOptions(AwsEbsDiskData values)
+        public AwsBootstrapEbsOptions(EbsBlockDevice values)
         {
             _values = values;
         }

@@ -1,5 +1,8 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
+using Amazon.EC2.Model;
+using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
 
 namespace ConDep.Dsl
 {
@@ -10,25 +13,25 @@ namespace ConDep.Dsl
         IOfferAwsBootstrapNetworkInterfaceOptions Description(string description);
         IOfferAwsBootstrapNetworkInterfaceOptions SecurityGroups(params string[] securityGroup);
         IOfferAwsBootstrapPrivateIpsOptions PrivateIps { get; }
+        IOfferAwsBootstrapNetworkInterfaceOptions PrivateIp(string ip);
         IOfferAwsBootstrapNetworkInterfaceOptions NumberOfSecondaryPrivateIps(int count);
-        IOfferAwsBootstrapNetworkInterfaceOptions SubnetId(string id);
+        IOfferAwsBootstrapNetworkInterfaceOptions UseAsRemoteManagementInterface(bool use);
     }
 
     class AwsBootstrapNetworkInterfaceOptions : IOfferAwsBootstrapNetworkInterfaceOptions
     {
-        private readonly AwsNetworkInterfaceValues _values;
+        private readonly InstanceNetworkInterfaceSpecification _values;
         private readonly IOfferAwsBootstrapPrivateIpsOptions _privateIps;
 
-        public AwsBootstrapNetworkInterfaceOptions(int index)
+        public AwsBootstrapNetworkInterfaceOptions(int index, string subnetId)
         {
-            _values = new AwsNetworkInterfaceValues(index);
-            Index = index;
-            _privateIps = new AwsBootstrapPrivateIpsOptions(_values);
+            _values = new InstanceNetworkInterfaceSpecification {DeviceIndex = index, SubnetId = subnetId};
+            _privateIps = new AwsBootstrapPrivateIpsOptions(_values.PrivateIpAddresses);
         }
 
         public IOfferAwsBootstrapNetworkInterfaceOptions AutoAssignPublicIp(bool assign)
         {
-            _values.AutoAssignPublicIp = assign;
+            _values.AssociatePublicIpAddress = assign;
             return this;
         }
 
@@ -46,17 +49,31 @@ namespace ConDep.Dsl
 
         public IOfferAwsBootstrapNetworkInterfaceOptions SecurityGroups(params string[] securityGroupId)
         {
-            _values.SecurityGroupIds = securityGroupId;
+            _values.Groups.AddRange(securityGroupId);
             return this;
         }
 
         public IOfferAwsBootstrapPrivateIpsOptions PrivateIps { get { return _privateIps; } }
 
-        public IOfferAwsBootstrapNetworkInterfaceOptions NumberOfSecondaryPrivateIps(int count)
+        public IOfferAwsBootstrapNetworkInterfaceOptions PrivateIp(string ip)
         {
-            _values.NumberOfSecondaryPrivateIps = count;
+            _values.PrivateIpAddress = ip;
             return this;
         }
+
+        public IOfferAwsBootstrapNetworkInterfaceOptions NumberOfSecondaryPrivateIps(int count)
+        {
+            _values.SecondaryPrivateIpAddressCount = count;
+            return this;
+        }
+
+        public IOfferAwsBootstrapNetworkInterfaceOptions UseAsRemoteManagementInterface(bool use)
+        {
+            UseForRemoteManagement = use;
+            return this;
+        }
+
+        internal bool UseForRemoteManagement { get; private set; }
 
         public IOfferAwsBootstrapNetworkInterfaceOptions SubnetId(string id)
         {
@@ -64,32 +81,6 @@ namespace ConDep.Dsl
             return this;
         }
 
-        public AwsNetworkInterfaceValues Values { get { return _values; } }
-
-        public int Index
-        {
-            get; private set; 
-        }
-    }
-
-    internal class AwsNetworkInterfaceValues
-    {
-        public AwsNetworkInterfaceValues(int index)
-        {
-            Index = index;
-        }
-
-        public int Index { get; private set; }
-
-        private readonly List<AwsPrivateIp> _privateIps = new List<AwsPrivateIp>();
- 
-        public bool AutoAssignPublicIp { get; set; }
-        public bool DeleteOnTermination { get; set; }
-        public string Description { get; set; }
-        public int NumberOfSecondaryPrivateIps { get; set; }
-        public string SubnetId { get; set; }
-        public string[] SecurityGroupIds { get; set; }
-        public List<AwsPrivateIp> PrivateIps { get { return _privateIps; } }
-        public string InterfaceId { get; set; }
+        public InstanceNetworkInterfaceSpecification Values { get { return _values; } }
     }
 }

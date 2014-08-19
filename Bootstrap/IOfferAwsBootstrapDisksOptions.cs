@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Amazon.EC2.Model;
 
 namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
@@ -10,10 +12,10 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 
     class AwsBootstrapDisksOptions : IOfferAwsBootstrapDisksOptions
     {
-        private readonly AwsBootstrapInputValues _values;
+        private readonly List<BlockDeviceMapping> _values;
         private readonly AwsBootstrapOptions _options;
 
-        public AwsBootstrapDisksOptions(AwsBootstrapInputValues values, AwsBootstrapOptions options)
+        public AwsBootstrapDisksOptions(List<BlockDeviceMapping> values, AwsBootstrapOptions options)
         {
             _values = values;
             _options = options;
@@ -21,55 +23,29 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 
         public IOfferAwsBootstrapOptions Add(string deviceName, string virtualName, string deviceToSuppressFromImage = null)
         {
-            _values.Disks.Add(new AwsDisk
+            _values.Add(new BlockDeviceMapping
             {
-                DeviceType = AwsDiskType.InstanceStoreVolume,
                 DeviceName = deviceName,
                 VirtualName = virtualName,
-                DeviceToSupressFromImage = deviceToSuppressFromImage
+                NoDevice = deviceToSuppressFromImage
             });
             return _options;
         }
 
         public IOfferAwsBootstrapOptions Add(string deviceName, Action<IOfferAwsBootstrapEbsOptions> ebs, string deviceToSuppressFromImage = null)
         {
-            var ebsData = new AwsEbsDiskData();
-            var ebsValues = new AwsBootstrapEbsOptions(ebsData);
+            var blockDevice = new BlockDeviceMapping
+            {
+                DeviceName = deviceName,
+                NoDevice = deviceToSuppressFromImage,
+                Ebs = new EbsBlockDevice()
+            };
+
+            var ebsValues = new AwsBootstrapEbsOptions(blockDevice.Ebs);
             ebs(ebsValues);
 
-            _values.Disks.Add(new AwsDisk
-            {
-                DeviceType = AwsDiskType.Ebs,
-                DeviceName = deviceName,
-                DeviceToSupressFromImage = deviceToSuppressFromImage,
-                Ebs = ebsData
-            });
+            _values.Add(blockDevice);
             return _options;
         }
-    }
-
-    internal class AwsEbsDiskData
-    {
-        public bool DeleteOnTermination { get; set; }
-        public bool Encrypted { get; set; }
-        public int Iops { get; set; }
-        public string SnapshotId { get; set; }
-        public int VolumeSize { get; set; }
-        public string VolumeType { get; set; }
-    }
-
-    internal enum AwsDiskType
-    {
-        Ebs,
-        InstanceStoreVolume
-    }
-
-    internal class AwsDisk
-    {
-        public string DeviceName { get; set; }
-        public string VirtualName { get; set; }
-        public string DeviceToSupressFromImage { get; set; }
-        public AwsDiskType DeviceType { get; set; }
-        public AwsEbsDiskData Ebs { get; set; }
     }
 }

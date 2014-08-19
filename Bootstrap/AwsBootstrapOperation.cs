@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Threading;
+using Amazon.EC2.Model;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Execution;
 using ConDep.Dsl.Harvesters;
@@ -15,14 +17,14 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
     internal class AwsBootstrapOperation : LocalOperation
     {
         private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
-        private readonly AwsBootstrapInputValues _options;
+        private readonly AwsBootstrapOptions _options;
 
         public AwsBootstrapOperation(AwsBootstrapMandatoryInputValues mandatoryOptions)
         {
             _mandatoryOptions = mandatoryOptions;
         }
 
-        public AwsBootstrapOperation(AwsBootstrapMandatoryInputValues mandatoryOptions, AwsBootstrapInputValues options)
+        public AwsBootstrapOperation(AwsBootstrapMandatoryInputValues mandatoryOptions, AwsBootstrapOptions options)
         {
             _mandatoryOptions = mandatoryOptions;
             _options = options;
@@ -31,13 +33,11 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
         public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
         {
             ValidateMandatoryOptions(settings);
-            var options = GetOptions();
-            var bootstrapper = new Ec2Bootstrapper(_mandatoryOptions, options);
+            var bootstrapper = new Ec2Bootstrapper(_mandatoryOptions, _options);
             var ec2Config = bootstrapper.Boostrap();
 
             foreach (var instance in ec2Config.Instances)
             {
-                var hostName = GetHostName(_options, instance);
                 settings.Config.Servers.Add(new ServerConfig
                 {
                     DeploymentUser = new DeploymentUserConfig
@@ -45,7 +45,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
                         UserName = instance.UserName,
                         Password = instance.Password
                     },
-                    Name = hostName
+                    Name = instance.ManagementAddress
                 });
             }
 
@@ -55,51 +55,6 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
                 throw new ConDepValidationException("Not all servers fulfill ConDep's requirements. Aborting execution.");
             }
             ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
-        }
-
-        private string GetHostName(AwsBootstrapInputValues options, Ec2Instance instance)
-        {
-            if (options != null && options.RemoteManagementConnectionType != null)
-            {
-                switch (options.RemoteManagementConnectionType)
-                {
-                    case RemoteManagementConnectionType.PublicDns:
-                        return instance.PublicDns;
-                    case RemoteManagementConnectionType.PublicIp:
-                        return instance.PublicIp;
-                    case RemoteManagementConnectionType.PrivateDns:
-                        return instance.PrivateDns;
-                    case RemoteManagementConnectionType.PrivateIp:
-                        return instance.PrivateIp;
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrWhiteSpace(instance.PublicDns))
-                {
-                    return instance.PublicDns;
-                }
-                if (!string.IsNullOrWhiteSpace(instance.PublicIp))
-                {
-                    return instance.PublicDns;
-                }
-                if (!string.IsNullOrWhiteSpace(instance.PrivateDns))
-                {
-                    return instance.PublicDns;
-                }
-                if (!string.IsNullOrWhiteSpace(instance.PrivateIp))
-                {
-                    return instance.PublicDns;
-                }
-            }
-            throw new Exception("No remote management address found.");
-        }
-
-        private AwsBootstrapInputValues GetOptions()
-        {
-            if (_options != null) return _options;
-
-            return new AwsBootstrapInputValues();
         }
 
         private void ValidateMandatoryOptions(ConDepSettings settings)
