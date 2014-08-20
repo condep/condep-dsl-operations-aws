@@ -73,58 +73,48 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
             }
         }
 
-        //public void Terminate(string bootstrapId, string vpcId)
-        //{
-        //    Logger.Info("Terminating instances");
-        //    var instanceRequest = new DescribeInstancesRequest
-        //    {
-        //        Filters = new[]
-        //        {
-        //            new Filter
-        //            {
-        //                Name = "tag:Name",
-        //                Values = new[] {Ec2TagHandler.GetNameTag(bootstrapId)}.ToList()
-        //            },
-        //            new Filter
-        //            {
-        //                Name = "instance-state-name",
-        //                Values = new[] {"running", "pending", "stopping", "stopped"}.ToList()
-        //            },
-        //            new Filter
-        //            {
-        //                Name = "vpc-id",
-        //                Values = new[] {vpcId}.ToList()
-        //            }
-        //        }.ToList()
-        //    };
-        //    var instances = _client.DescribeInstances(instanceRequest);
+        public void Terminate(string bootstrapId)
+        {
+            Logger.Info("Terminating instances");
+            var instanceRequest = new DescribeInstancesRequest
+            {
+                Filters = new[]
+                {
+                    new Filter
+                    {
+                        Name = "client-token",
+                        Values = new[] {bootstrapId}.ToList()
+                    }
+                }.ToList()
+            };
+            var instances = _client.DescribeInstances(instanceRequest);
 
-        //    var terminationRequest = new TerminateInstancesRequest();
-        //    var instanceIds = instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId)).ToList();
-        //    terminationRequest.InstanceIds.AddRange(instanceIds);
+            var terminationRequest = new TerminateInstancesRequest();
+            var instanceIds = instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId)).ToList();
+            terminationRequest.InstanceIds.AddRange(instanceIds);
 
-        //    _client.TerminateInstances(terminationRequest);
-        //    Logger.WithLogSection("Waiting for instances to terminate", () => WaitForInstancesToTerminate(instanceIds));
-        //}
+            _client.TerminateInstances(terminationRequest);
+            Logger.WithLogSection("Waiting for instances to terminate", () => WaitForInstancesToTerminate(instanceIds));
+        }
 
-        //private void WaitForInstancesToTerminate(List<string> instanceIds)
-        //{
-        //    var instances = GetInstances(instanceIds).ToList();
-        //    var states = instances.Select(y => y.State);
+        private void WaitForInstancesToTerminate(List<string> instanceIds)
+        {
+            var instances = GetInstances(instanceIds).ToList();
+            var states = instances.Select(y => y.State);
 
-        //    Logger.WithLogSection("Status of instances", () =>
-        //    {
-        //        foreach (var instance in instances)
-        //        {
-        //            Logger.Info("Instance Id: {0}  Status: {1}", instance.InstanceId, instance.State.Name);
-        //        }
-        //    });
+            Logger.WithLogSection("Status of instances", () =>
+            {
+                foreach (var instance in instances)
+                {
+                    Logger.Info("Instance Id: {0}  Status: {1}", instance.InstanceId, instance.State.Name);
+                }
+            });
 
-        //    if (states.Any(x => x.Name != "terminated"))
-        //    {
-        //        Thread.Sleep(5000);
-        //        WaitForInstancesToTerminate(instanceIds);
-        //    }
-        //}
+            if (states.Any(x => x.Name != "terminated"))
+            {
+                Thread.Sleep(5000);
+                WaitForInstancesToTerminate(instanceIds);
+            }
+        }
     }
 }

@@ -93,6 +93,8 @@
     <Compile Include="Bootstrap\IOfferAwsBootstrapUserDataOptions.cs" />
     <Compile Include="Bootstrap\OperationConfigException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Terminate\Ec2Terminator.cs" />
+    <Compile Include="Terminate\TerminateExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

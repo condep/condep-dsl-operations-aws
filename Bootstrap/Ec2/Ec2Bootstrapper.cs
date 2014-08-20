@@ -16,14 +16,10 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
     internal class Ec2Bootstrapper
     {
         private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
-        private AwsBootstrapOptions _options;
-        private readonly string _awsProfileName;
+        private readonly AwsBootstrapOptions _options;
         private readonly IAmazonEC2 _client;
-        private Ec2InstanceHandler _instanceHandler;
-        //private Ec2SecurityGroupHandler _securityGroupHandler;
-        //private Ec2TagHandler _tagHandler;
-        private Ec2InstancePasswordHandler _passwordHandler;
-        //private Ec2SnapshotHandler _snapshotHandler;
+        private readonly Ec2InstanceHandler _instanceHandler;
+        private readonly Ec2InstancePasswordHandler _passwordHandler;
 
         public Ec2Bootstrapper(AwsBootstrapMandatoryInputValues mandatoryOptions, AwsBootstrapOptions options)
         {
@@ -35,10 +31,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
             _client = AWSClientFactory.CreateAmazonEC2Client(creds, endpoint);
 
             _instanceHandler = new Ec2InstanceHandler(_client);
-            //_securityGroupHandler = new Ec2SecurityGroupHandler(_client);
-            //_tagHandler = new Ec2TagHandler(_client);
             _passwordHandler = new Ec2InstancePasswordHandler(_client);
-            //_snapshotHandler = new Ec2SnapshotHandler(_client, _tagHandler);
         }
 
         public Ec2BootstrapConfig Boostrap()
@@ -107,7 +100,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
                 config.Instances.Add(new Ec2Instance
                 {
                     InstanceId = instance.InstanceId,
-                    UserName = "Administrator",
+                    UserName = @".\Administrator",
                     Password = passwords.Single(x => x.Item1 == instance.InstanceId).Item2,
                     ManagementAddress = GetManagementAddress(_options, instance)
                 });
