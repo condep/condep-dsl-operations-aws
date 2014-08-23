@@ -41,6 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ConDep.Dsl.3.0.20-beta\lib\net40\ConDep.Dsl.dll</HintPath>
     </Reference>
+    <Reference Include="ConDep.Dsl.Operations">
+      <HintPath>..\packages\ConDep.Dsl.Operations.3.0.23-beta\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
@@ -98,12 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ConDep.Dsl.Operations\ConDep.Dsl.Operations.csproj">
-      <Project>{A1FF699A-76FF-440C-8FD2-9FCA9EE3B26F}</Project>
-      <Name>ConDep.Dsl.Operations</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
