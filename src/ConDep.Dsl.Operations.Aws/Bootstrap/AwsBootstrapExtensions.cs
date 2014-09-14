@@ -59,7 +59,7 @@ namespace ConDep.Dsl
         {
             var mandatoryOptions = new AwsBootstrapMandatoryInputValues(bootstrapId);
             var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions);
-            Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
+            Configure.Operation(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }
 
@@ -80,7 +80,7 @@ namespace ConDep.Dsl
             options(instanceOptions);
 
             var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions, instanceOptions);
-            Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
+            Configure.Operation(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }
 
@@ -101,7 +101,7 @@ namespace ConDep.Dsl
             mandatoryConfig(mandatoryOptions);
 
             var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values);
-            Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
+            Configure.Operation(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }
 
@@ -126,7 +126,7 @@ namespace ConDep.Dsl
             options(instanceOptions);
 
             var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values, instanceOptions);
-            Configure.Local(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
+            Configure.Operation(((AwsBootstrapOperations)bootstrap).LocalOperations, awsBootstrapOperation);
             return bootstrap;
         }
     }

@@ -83,6 +83,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
             Logger.Info("Creating instances...");
             var instanceIds = _instanceHandler.CreateInstances(config.BootstrapId, _mandatoryOptions, _options.Values).ToList();
 
+            Thread.Sleep(10000);
             //Logger.Info("Tagging instances.            //var instanceTag = _tagHandler.CreateNameTags(config.BootstrapId, instanceIds);
 
             Logger.WithLogSection("Waiting for instances to be ready",
@@ -142,7 +143,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap.Ec2
                 config.Instances.Add(new Ec2Instance
                 {
                     InstanceId = instance.InstanceId,
-                    UserName = "Administrator",
+                    UserName = ".\\Administrator",
                     Password = existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
                     AwsInstance = instance,
                     ManagementAddress = GetManagementAddress(_options, instance)

@@ -20,7 +20,7 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
         {
             var op = new AwsTerminateOperation(mandatoryInputValues);
             var local = ((AwsTerminateOperations) terminate).LocalOperations;
-            Configure.Local(local, op);
+            Configure.Operation(local, op);
             return local;
         }
     }
