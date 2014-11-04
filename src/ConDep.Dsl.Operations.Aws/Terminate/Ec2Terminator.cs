@@ -20,7 +20,9 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
             _mandatoryOptions = mandatoryOptions;
 
             AWSCredentials creds = _mandatoryOptions.Credentials.UseProfile ? (AWSCredentials)new StoredProfileAWSCredentials(_mandatoryOptions.Credentials.ProfileName) : new BasicAWSCredentials(_mandatoryOptions.Credentials.AccessKey, _mandatoryOptions.Credentials.SecretKey);
-            _client = AWSClientFactory.CreateAmazonEC2Client(creds);
+            AmazonEC2Config config = new AmazonEC2Config { RegionEndpoint = _mandatoryOptions.RegionEndpoint };
+
+            _client = AWSClientFactory.CreateAmazonEC2Client(creds, config);
 
             _instanceHandler = new Ec2InstanceHandler(_client);
         }

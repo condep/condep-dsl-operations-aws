@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Amazon;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Operations.Application.Local;
@@ -62,6 +63,7 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
                 _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
                 _mandatoryOptions.SubnetId = config.SubnetId;
                 _mandatoryOptions.Region = config.Region;
+                _mandatoryOptions.RegionEndpoint = GetRegionEndpoint(config.Region);
 
                 string profileName = config.Credentials.ProfileName;
                 if (string.IsNullOrEmpty(profileName))
@@ -93,6 +95,25 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
                     string.Format("Configuration extraction for {0} failed during binding. Please check inner exception for details.",
                         GetType().Name), binderException);
             }
+        }
+
+        private RegionEndpoint GetRegionEndpoint(string region)
+        {
+            if (region == "us-east-1")
+                return RegionEndpoint.USEast1;
+            if (region == "us-west-1")
+                return RegionEndpoint.USWest1;
+            if (region == "us-west-2")
+                return RegionEndpoint.USWest2;
+            if (region == "ap-southeast-1")
+                return RegionEndpoint.APSoutheast1;
+            if (region == "ap-southeast-2")
+                return RegionEndpoint.APSoutheast2;
+            if (region == "ap-northeast-1")
+                return RegionEndpoint.APNortheast1;
+            if (region == "sa-east-1")
+                return RegionEndpoint.SAEast1;
+            return RegionEndpoint.EUWest1;
         }
 
 

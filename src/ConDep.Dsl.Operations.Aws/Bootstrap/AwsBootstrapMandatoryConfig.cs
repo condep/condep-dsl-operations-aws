@@ -1,4 +1,6 @@
-﻿namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
+﻿using Amazon;
+
+namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
     public class AwsBootstrapMandatoryConfig : IOfferAwsBootstrapMandatoryConfig
     {
@@ -55,6 +57,7 @@
         public string PrivateKeyFileLocation { get; set; }
         public string SubnetId { get; set; }
         public string Region { get; set; }
+        public RegionEndpoint RegionEndpoint { get; set; }
 
         public string BootstrapId
         {
