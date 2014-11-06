@@ -63,7 +63,7 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
                 _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
                 _mandatoryOptions.SubnetId = config.SubnetId;
                 _mandatoryOptions.Region = config.Region;
-                _mandatoryOptions.RegionEndpoint = GetRegionEndpoint(config.Region);
+                _mandatoryOptions.RegionEndpoint = GetRegionEndpoint((string) config.Region);
 
                 string profileName = config.Credentials.ProfileName;
                 if (string.IsNullOrEmpty(profileName))
