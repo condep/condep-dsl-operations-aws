@@ -37,13 +37,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.2.2.3.0\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Dsl, Version=3.0.69.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ConDep.Dsl, Version=3.0.71.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ConDep.Dsl.3.0.69-beta\lib\net40\ConDep.Dsl.dll</HintPath>
+      <HintPath>..\packages\ConDep.Dsl.3.0.71-beta\lib\net40\ConDep.Dsl.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Dsl.Operations, Version=3.0.50.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ConDep.Dsl.Operations, Version=3.0.51.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ConDep.Dsl.Operations.3.0.50-beta\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+      <HintPath>..\packages\ConDep.Dsl.Operations.3.0.51-beta\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>

@@ -45,7 +45,9 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
                         UserName = instance.UserName,
                         Password = instance.Password
                     },
-                    Name = instance.ManagementAddress
+                    Name = instance.ManagementAddress,
+                    PowerShell = new PowerShellConfig() { HttpPort = 5985, HttpsPort = 5986 },
+                    Node = new NodeConfig() { Port = 4444, TimeoutInSeconds = 100}
                 });
             }
 
