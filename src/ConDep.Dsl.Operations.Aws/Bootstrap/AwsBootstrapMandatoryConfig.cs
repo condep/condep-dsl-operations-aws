@@ -1,6 +1,4 @@
-﻿using Amazon;
-
-namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
+﻿namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
 {
     public class AwsBootstrapMandatoryConfig : IOfferAwsBootstrapMandatoryConfig
     {
@@ -41,36 +39,4 @@ namespace ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws
             return this;
         }
     }
-
-    public class AwsBootstrapMandatoryInputValues
-    {
-        private readonly string _bootstrapId;
-        private readonly AwsBootstrapMandatoryCredentials _credentials = new AwsBootstrapMandatoryCredentials();
-
-        public AwsBootstrapMandatoryInputValues(string bootstrapId)
-        {
-            _bootstrapId = bootstrapId;
-        }
-
-        public AwsBootstrapMandatoryCredentials Credentials { get { return _credentials; } }
-        public string PublicKeyName { get; set; }
-        public string PrivateKeyFileLocation { get; set; }
-        public string SubnetId { get; set; }
-        public string Region { get; set; }
-        public RegionEndpoint RegionEndpoint { get; set; }
-
-        public string BootstrapId
-        {
-            get { return _bootstrapId; }
-        }
-    }
-
-    public class AwsBootstrapMandatoryCredentials
-    {
-        public bool UseProfile { get; set; }
-        public string ProfileName { get; set; }
-        public string AccessKey { get; set; }
-        public string SecretKey { get; set; }
-    }
-
 }

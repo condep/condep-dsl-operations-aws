@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Amazon;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Execution;
@@ -32,7 +33,7 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
 
         public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
         {
-            ValidateMandatoryOptions(settings);
+            LoadOptionsFromConfig(settings);
             var bootstrapper = new Ec2Bootstrapper(_mandatoryOptions, _options);
             var ec2Config = bootstrapper.Boostrap();
 
@@ -59,7 +60,17 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
             ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
         }
 
-        private void ValidateMandatoryOptions(ConDepSettings settings)
+        private void ValidateMandatoryOptions(AwsBootstrapMandatoryInputValues config)
+        {
+            if (config.SubnetId == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for SubnetId must be present for operation {0}.", GetType().Name));
+            if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
+            if (config.PrivateKeyFileLocation == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PrivateKeyFileLocation must be present for operation {0}.", GetType().Name));
+            if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
+            if (config.Credentials == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials must be present for operation {0}.", GetType().Name));
+            if (config.Region == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Region must be present for operation {0}.", GetType().Name));
+        }
+
+        private void LoadOptionsFromConfig(ConDepSettings settings)
         {
             if (settings.Config.OperationsConfig == null || settings.Config.OperationsConfig.AwsBootstrapOperation == null)
             {
@@ -69,17 +80,11 @@ namespace ConDep.Dsl.Operations.Aws.Bootstrap
             var config = settings.Config.OperationsConfig.AwsBootstrapOperation;
             try
             {
-                if (config.SubnetId == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for SubnetId must be present for operation {0}.", GetType().Name));
-                if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-                if (config.PrivateKeyFileLocation == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PrivateKeyFileLocation must be present for operation {0}.", GetType().Name));
-                if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-                if (config.Credentials == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials must be present for operation {0}.", GetType().Name));
-                if (config.Region == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Region must be present for operation {0}.", GetType().Name));
-
-                _mandatoryOptions.PublicKeyName = config.PublicKeyName;
-                _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
-                _mandatoryOptions.SubnetId = config.SubnetId;
-                _mandatoryOptions.Region = config.Region;
+                if (string.IsNullOrWhiteSpace(_mandatoryOptions.PublicKeyName)) _mandatoryOptions.PublicKeyName = config.PublicKeyName;
+                if (string.IsNullOrWhiteSpace(_mandatoryOptions.PrivateKeyFileLocation)) _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
+                if (string.IsNullOrWhiteSpace(_mandatoryOptions.SubnetId)) _mandatoryOptions.SubnetId = config.SubnetId;
+                if (string.IsNullOrWhiteSpace(_mandatoryOptions.Region)) _mandatoryOptions.Region = config.Region;
+                if (_mandatoryOptions.RegionEndpoint == null) _mandatoryOptions.RegionEndpoint = RegionEndpoint.GetBySystemName(config.RegionEndpoint);
 
                 string profileName = config.Credentials.ProfileName;
                 if (string.IsNullOrEmpty(profileName))

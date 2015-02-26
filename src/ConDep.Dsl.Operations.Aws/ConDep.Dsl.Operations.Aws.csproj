@@ -69,10 +69,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bootstrap\AwsBootstrapDisksOptions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapEbsOptions.cs" />
     <Compile Include="Bootstrap\AwsBootstrapExtensions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapImageOptions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapImageValues.cs" />
     <Compile Include="Bootstrap\AwsBootstrapMandatoryConfig.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapMandatoryCredentials.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapMandatoryInputValues.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapNetworkInterfaceOptions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapNetworkInterfacesOptions.cs" />
     <Compile Include="Bootstrap\AwsBootstrapOperation.cs" />
     <Compile Include="Bootstrap\AwsBootstrapOperations.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapOptions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapPrivateIpsOptions.cs" />
+    <Compile Include="Bootstrap\AwsBootstrapUserDataOptions.cs" />
     <Compile Include="Bootstrap\AwsBootstrapVolumeType.cs" />
     <Compile Include="Bootstrap\AwsInstanceType.cs" />
     <Compile Include="Bootstrap\AwsShutdownBehavior.cs" />
@@ -97,8 +108,12 @@
     <Compile Include="Bootstrap\IOfferAwsBootstrapPrivateIpsOptions.cs" />
     <Compile Include="Bootstrap\IOfferAwsBootstrapUserDataOptions.cs" />
     <Compile Include="Bootstrap\OperationConfigException.cs" />
+    <Compile Include="Bootstrap\RemoteManagementAddressType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Terminate\AwsTerminateOperation.cs" />
+    <Compile Include="Terminate\AwsTerminateOperations.cs" />
     <Compile Include="Terminate\Ec2Terminator.cs" />
+    <Compile Include="Terminate\IOfferAwsTerminateOperations.cs" />
     <Compile Include="Terminate\TerminateExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
