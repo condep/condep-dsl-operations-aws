@@ -1,13 +1,10 @@
-﻿using System.Collections.Generic;
-using Amazon;
+﻿using Amazon;
 using Amazon.EC2;
-using Amazon.EC2.Model;
 using Amazon.Runtime;
-using ConDep.Dsl.Logging;
-using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
-using ConDep.Dsl.Operations.Aws.Bootstrap.Ec2;
+using ConDep.Dsl;
+using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
 
-namespace ConDep.Dsl.Operations.Aws.Terminate
+namespace ConDep.Dsl.Terminate
 {
     public class Ec2Terminator
     {

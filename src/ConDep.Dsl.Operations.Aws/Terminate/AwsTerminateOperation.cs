@@ -1,11 +1,11 @@
 using System.Threading;
 using Amazon;
 using ConDep.Dsl.Config;
-using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
+using ConDep.Dsl;
 using ConDep.Dsl.Validation;
 using Microsoft.CSharp.RuntimeBinder;
 
-namespace ConDep.Dsl.Operations.Aws.Terminate
+namespace ConDep.Dsl.Terminate
 {
     public class AwsTerminateOperation : LocalOperation
     {

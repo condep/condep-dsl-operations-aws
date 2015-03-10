@@ -1,9 +1,7 @@
-﻿using Amazon.Runtime;
-using ConDep.Dsl.Operations.Application.Local;
-using ConDep.Dsl.Operations.Application.Local.Bootstrap.Aws;
+﻿using ConDep.Dsl;
 using ConDep.Dsl.Operations.Builders;
 
-namespace ConDep.Dsl.Operations.Aws.Terminate
+namespace ConDep.Dsl.Terminate
 {
     public static class TerminateExtensions
     {

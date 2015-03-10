@@ -1,4 +1,4 @@
-﻿namespace ConDep.Dsl.Operations.Aws.Terminate
+﻿namespace ConDep.Dsl.Terminate
 {
     public class AwsTerminateOperations : IOfferAwsTerminateOperations
     {
