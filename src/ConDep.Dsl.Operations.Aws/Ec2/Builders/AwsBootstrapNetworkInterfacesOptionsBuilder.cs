@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Amazon.EC2.Model;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {

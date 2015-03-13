@@ -1,7 +1,11 @@
 ﻿using System;
+using Amazon.EC2.Model;
 using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.Ec2;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
+using ConDep.Dsl.Operations.Aws.Terminate;
+using ConDep.Dsl.Terminate;
 
 namespace ConDep.Dsl
 {
@@ -37,9 +41,9 @@ namespace ConDep.Dsl
     {
         /// <summary>
         /// Bootstrap one or more Amazon AWS Virtual Private Cloud (VPC) instances and adds 
-        /// them to ConDep's servers collection. This method assume default settings are 
+        /// them to ConDep's servers collection. This method assume mandatory settings are 
         /// found in ConDep's environment file. If you prefer to specify settings directly, use
-        /// one of the other overloads.
+        /// the other overload and specify settings in code.
         /// </summary>
         /// <param name="bootstrap"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
@@ -49,17 +53,17 @@ namespace ConDep.Dsl
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
             var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
-            var mandatoryOptions = new AwsBootstrapMandatoryInputValues(bootstrapId);
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions);
+            var options = new AwsBootstrapOptionsValues(bootstrapId);
+            var awsBootstrapOperation = new AwsBootstrapOperation(options);
+
             Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
         /// <summary>
         /// Bootstrap one or more Amazon AWS Virtual Private Cloud (VPC) instances and adds 
-        /// them to ConDep's servers collection. This method assume default settings are 
-        /// found in ConDep's environment file. If you prefer to specify settings directly, use
-        /// one of the other overloads.
+        /// them to ConDep's servers collection. This method assume mandatory settings not  
+        /// specified in cound is found in ConDep's environment file. 
         /// </summary>
         /// <param name="bootstrap"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
@@ -70,69 +74,20 @@ namespace ConDep.Dsl
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
             var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
-            var mandatoryOptions = new AwsBootstrapMandatoryInputValues(bootstrapId);
-            var instanceOptions = new AwsBootstrapOptionsBuilder();
+            var instanceOptions = new AwsBootstrapOptionsBuilder(bootstrapId);
             options(instanceOptions);
 
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions, instanceOptions);
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
-        }
-
-        /// <summary>
-        /// Bootstrap one or more Amazon AWS Virtual Private Cloud (VPC) instances and adds 
-        /// them to ConDep's servers collection. This method takes mandatory settings as parameters.
-        /// If you prefer to specify settings in the environment configuration file instead, use 
-        /// <see cref="VpcInstance(IOfferAwsBootstrapOperations)" /> which takes mandatory
-        /// settings from configuration.
-        /// </summary>
-        /// <param name="bootstrap"></param>
-        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
-        /// <param name="mandatoryConfig">Mandatory configuration for bootstrapping instances.</param>
-        /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId, Action<IOfferAwsBootstrapMandatoryConfig> mandatoryConfig)
-        {
-            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
-
-            var mandatoryOptions = new AwsBootstrapMandatoryConfigBuilder(bootstrapId);
-            mandatoryConfig(mandatoryOptions);
-
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values);
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
-        }
-
-        /// <summary>
-        /// Bootstrap one or more Amazon AWS Virtual Private Cloud (VPC) instances and adds 
-        /// them to ConDep's servers collection. This method takes mandatory settings as parameters.
-        /// If you prefer to specify settings in the environment configuration file instead, use 
-        /// <see cref="VpcInstance(IOfferAwsBootstrapOperations, Action{IOfferAwsBootstrapOptions})" /> 
-        /// which takes mandatory settings from configuration.
-        /// </summary>
-        /// <param name="bootstrap"></param>
-        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
-        /// <param name="mandatoryConfig">Mandatory configuration for bootstrapping instances.</param>
-        /// <param name="options">Additional configuration options for bootstrapping instances.</param>
-        /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId, Action<IOfferAwsBootstrapMandatoryConfig> mandatoryConfig, Action<IOfferAwsBootstrapOptions> options)
-        {
-            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
-
-            var mandatoryOptions = new AwsBootstrapMandatoryConfigBuilder(bootstrapId);
-            mandatoryConfig(mandatoryOptions);
-
-            var instanceOptions = new AwsBootstrapOptionsBuilder();
-            options(instanceOptions);
-
-            var awsBootstrapOperation = new AwsBootstrapOperation(mandatoryOptions.Values, instanceOptions);
+            var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
             Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
         public static IOfferAwsOperations TerminateInstances(this IOfferAwsEc2Operations ec2)
         {
+            //var op = new AwsTerminateOperation(mandatoryInputValues);
+            //var local = ((AwsTerminateOperations)terminate).LocalOperations;
+            //Configure.Operation(local, op);
+            //return local;
             throw new NotImplementedException();
         }
 

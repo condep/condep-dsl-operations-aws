@@ -4,8 +4,8 @@ using System.Threading;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
-using ConDep.Dsl;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 {
@@ -110,6 +110,14 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 Thread.Sleep(5000);
                 WaitForInstancesToTerminate(instanceIds);
             }
+        }
+
+        public void TagInstances(List<string> instanceIds, List<KeyValuePair<string, string>> tags)
+        {
+            if (tags.Count == 0) return;
+
+            var request = new CreateTagsRequest(instanceIds, tags.Select(x => new Tag(x.Key, x.Value)).ToList());
+            _client.CreateTags(request);
         }
     }
 }

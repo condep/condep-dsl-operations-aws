@@ -1,6 +1,6 @@
 using System;
 
-namespace ConDep.Dsl
+namespace ConDep.Dsl.Operations.Aws
 {
     public class OperationConfigException : Exception
     {

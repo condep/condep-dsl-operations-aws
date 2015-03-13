@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Amazon;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using ConDep.Dsl.Validation;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
@@ -66,7 +66,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                         _options.InstanceRequest.ImageId = amiLocator.Find2012R2Core();
                         break;
                     default:
-                        throw new Exception("Image " + imageValues.LatestImage + " currently not supported.");
+                        throw new Exception("Image " + imageValues.LatestImage + " currently not supported. Please specify image id as a string instead.");
                 }
             }
             else
@@ -88,7 +88,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             Logger.WithLogSection("Waiting for Windows password to be available",
                 () => { passwords = _passwordHandler.WaitForPassword(instanceIds, _options.PrivateKeyFileLocation); });
 
+            _instanceHandler.TagInstances(instanceIds, _options.Tags);
+
             var instances = _instanceHandler.GetInstances(instanceIds).ToList();
+
 
             foreach (var instance in instances)
             {
@@ -127,10 +130,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
         private Ec2BootstrapConfig GetConfigFromExisting(Ec2BootstrapConfig config)
         {
             Logger.Info("Allready bootstrapped. Getting server information.");
-            var existingInstances = _instanceHandler.GetInstances(_mandatoryOptions.BootstrapId).ToList();
+            var existingInstances = _instanceHandler.GetInstances(_options.InstanceRequest.ClientToken).ToList();
 
             var existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId),
-                _mandatoryOptions.PrivateKeyFileLocation);
+                _options.PrivateKeyFileLocation);
 
             foreach (var instance in existingInstances)
             {
@@ -191,11 +194,11 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
         private static InstanceNetworkInterface GetManagementInterface(AwsBootstrapOptionsValues options, Instance instance)
         {
-            if (options.Values.NetworkInterfaces.Count > 0)
+            if (options.InstanceRequest.NetworkInterfaces.Count > 0)
             {
-                if (options.ManagementInterfaceIndex != null)
+                if (options.NetworkInterfaceValues.RemoteManagementInterfaceIndex != null)
                 {
-                    return instance.NetworkInterfaces[options.ManagementInterfaceIndex.Value];
+                    return instance.NetworkInterfaces[options.NetworkInterfaceValues.RemoteManagementInterfaceIndex.Value];
                 }
             }
             return instance.NetworkInterfaces[0];

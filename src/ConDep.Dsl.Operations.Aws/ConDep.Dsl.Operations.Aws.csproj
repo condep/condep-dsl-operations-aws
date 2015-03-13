@@ -41,9 +41,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ConDep.Dsl.4.0.0\lib\net40\ConDep.Dsl.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Dsl.Operations, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="ConDep.Dsl.Operations, Version=3.2.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ConDep.Dsl.Operations.3.2.0\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+      <HintPath>..\packages\ConDep.Dsl.Operations.3.2.1\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
@@ -73,6 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AwsOperationsBuilder.cs" />
+    <Compile Include="Ec2\Model\AwsBootstrapNetworkInterfaceOptionsValues.cs" />
+    <Compile Include="Ec2\Builders\AwsBootstrapTagOptionsBuilder.cs" />
+    <Compile Include="Ec2\Model\AwsBootstrapOptionsValues.cs" />
+    <Compile Include="Ec2\IOfferAwsTagOptions.cs" />
     <Compile Include="Elb\AwsElbExtensions.cs" />
     <Compile Include="Ec2\AwsEc2Extensions.cs" />
     <Compile Include="AwsExtensions.cs" />
@@ -80,9 +84,7 @@
     <Compile Include="Ec2\Builders\AwsBootstrapEbsOptionsBuilder.cs" />
     <Compile Include="Ec2\Builders\AwsBootstrapImageOptionsBuilder.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapImageValues.cs" />
-    <Compile Include="Ec2\Builders\AwsBootstrapMandatoryConfigBuilder.cs" />
-    <Compile Include="Ec2\AwsBootstrapMandatoryCredentials.cs" />
-    <Compile Include="Ec2\AwsBootstrapMandatoryInputValues.cs" />
+    <Compile Include="AwsCredentials.cs" />
     <Compile Include="Ec2\Builders\AwsBootstrapNetworkInterfaceOptionsBuilder.cs" />
     <Compile Include="Ec2\Builders\AwsBootstrapNetworkInterfacesOptionsBuilder.cs" />
     <Compile Include="Ec2\AwsBootstrapOperation.cs" />
@@ -113,9 +115,10 @@
     <Compile Include="Ec2\IOfferAwsBootstrapOptions.cs" />
     <Compile Include="Ec2\IOfferAwsBootstrapPrivateIpsOptions.cs" />
     <Compile Include="Ec2\IOfferAwsBootstrapUserDataOptions.cs" />
-    <Compile Include="Ec2\OperationConfigException.cs" />
+    <Compile Include="OperationConfigException.cs" />
     <Compile Include="Ec2\RemoteManagementAddressType.cs" />
     <Compile Include="Ec2\IOfferAwsEc2Operations.cs" />
+    <Compile Include="Elb\AwsElbOperation.cs" />
     <Compile Include="Elb\IOfferAwsElbOperations.cs" />
     <Compile Include="Elb\LoadBalancer.cs" />
     <Compile Include="IOfferAwsOperations.cs" />
@@ -125,7 +128,6 @@
     <Compile Include="Terminate\AwsTerminateOperations.cs" />
     <Compile Include="Terminate\Ec2Terminator.cs" />
     <Compile Include="Terminate\IOfferAwsTerminateOperations.cs" />
-    <Compile Include="Terminate\TerminateExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

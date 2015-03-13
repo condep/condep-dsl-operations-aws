@@ -1,25 +1,28 @@
 using System.Threading;
 using Amazon;
+using Amazon.EC2.Model;
+using Amazon.Runtime;
 using ConDep.Dsl.Config;
-using ConDep.Dsl;
+using ConDep.Dsl.Operations.Aws.Ec2.Builders;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using ConDep.Dsl.Validation;
 using Microsoft.CSharp.RuntimeBinder;
 
-namespace ConDep.Dsl.Terminate
+namespace ConDep.Dsl.Operations.Aws.Terminate
 {
-    public class AwsTerminateOperation : LocalOperation
+    internal class AwsTerminateOperation : LocalOperation
     {
-        private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
+        private readonly AwsBootstrapOptionsValues _options;
 
-        public AwsTerminateOperation(AwsBootstrapMandatoryInputValues mandatoryOptions)
+        public AwsTerminateOperation(AwsBootstrapOptionsValues options)
         {
-            _mandatoryOptions = mandatoryOptions;
+            _options = options;
         }
 
         public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
         {
             ValidateMandatoryOptions(settings);
-            var terminator = new Ec2Terminator(_mandatoryOptions);
+            var terminator = new Ec2Terminator(_options);
             terminator.Terminate();
         }
 
@@ -30,44 +33,34 @@ namespace ConDep.Dsl.Terminate
                 return;
             }
 
-            var config = settings.Config.OperationsConfig.AwsBootstrapOperation;
+            var ec2DynamicConfig = settings.Config.OperationsConfig.AwsBootstrapOperation;
             try
             {
-                if (config.SubnetId == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for SubnetId must be present for operation {0}.", GetType().Name));
-                if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-                if (config.PrivateKeyFileLocation == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PrivateKeyFileLocation must be present for operation {0}.", GetType().Name));
-                if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-                if (config.Credentials == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials must be present for operation {0}.", GetType().Name));
-                if (config.Region == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Region must be present for operation {0}.", GetType().Name));
+                if (string.IsNullOrWhiteSpace(_options.InstanceRequest.KeyName)) _options.InstanceRequest.KeyName = ec2DynamicConfig.PublicKeyName;
+                if (string.IsNullOrWhiteSpace(_options.PrivateKeyFileLocation)) _options.PrivateKeyFileLocation = ec2DynamicConfig.PrivateKeyFileLocation;
+                if (string.IsNullOrWhiteSpace(_options.InstanceRequest.SubnetId)) _options.InstanceRequest.SubnetId = ec2DynamicConfig.SubnetId;
+                if (_options.RegionEndpoint == null) _options.RegionEndpoint = RegionEndpoint.GetBySystemName((string)ec2DynamicConfig.Region);
+                if (_options.InstanceRequest.Placement == null) _options.InstanceRequest.Placement = new Placement(ec2DynamicConfig.AvailabilityZone);
 
-                _mandatoryOptions.PublicKeyName = config.PublicKeyName;
-                _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
-                _mandatoryOptions.SubnetId = config.SubnetId;
-                _mandatoryOptions.Region = config.Region;
-                _mandatoryOptions.RegionEndpoint = GetRegionEndpoint((string) config.Region);
-
-                string profileName = config.Credentials.ProfileName;
+                string profileName = ec2DynamicConfig.Credentials.ProfileName;
                 if (string.IsNullOrEmpty(profileName))
                 {
-                    _mandatoryOptions.Credentials.UseProfile = false;
-                    if (config.Credentials.AccessKey == null)
+                    if (ec2DynamicConfig.Credentials.AccessKey == null)
                         throw new OperationConfigException(
                             string.Format(
                                 "Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
                                 GetType().Name));
-                    if (config.Credentials.SecretKey == null)
+                    if (ec2DynamicConfig.Credentials.SecretKey == null)
                         throw new OperationConfigException(
                             string.Format(
                                 "Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
                                 GetType().Name));
 
-                    _mandatoryOptions.Credentials.AccessKey = config.Credentials.AccessKey;
-                    _mandatoryOptions.Credentials.SecretKey = config.Credentials.SecretKey;
+                    _options.Credentials = new BasicAWSCredentials(ec2DynamicConfig.Credentials.AccessKey, ec2DynamicConfig.Credentials.SecretKey);
                 }
                 else
                 {
-                    _mandatoryOptions.Credentials.UseProfile = true;
-                    _mandatoryOptions.Credentials.ProfileName = config.Credentials.ProfileName;
+                    _options.Credentials = new StoredProfileAWSCredentials(ec2DynamicConfig.Credentials.ProfileName);
                 }
             }
             catch (RuntimeBinderException binderException)

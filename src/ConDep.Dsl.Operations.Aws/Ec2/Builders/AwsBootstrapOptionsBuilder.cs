@@ -1,52 +1,25 @@
-using System.Collections.Generic;
 using System.Linq;
 using Amazon;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using Amazon.Runtime;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {
-    internal class AwsBootstrapOptionsValues
-    {
-        private readonly RunInstancesRequest _request;
-        private readonly string _bootstrapId;
-
-        public AwsBootstrapOptionsValues(RunInstancesRequest request)
-        {
-            _request = request;
-        }
-
-        public RunInstancesRequest InstanceRequest
-        {
-            get { return _request; }
-        }
-
-        public AWSCredentials Credentials { get; set; }
-        public string PrivateKeyFileLocation { get; set; }
-        public string SubnetId { get; set; }
-        public string Region { get; set; }
-        public RegionEndpoint RegionEndpoint { get; set; }
-        public AwsBootstrapImageValues Image { get; set; }
-        public RemoteManagementAddressType? ManagementAddressType { get; set; }
-        public AwsBootstrapNetworkInterfaceOptionsValues NetworkInterfaceValues { get; set; }
-    }
-
     internal class AwsBootstrapOptionsBuilder : IOfferAwsBootstrapOptions
     {
         private readonly AwsBootstrapOptionsValues _values;
         private readonly IOfferAwsBootstrapImageOptions _image;
         private readonly IOfferAwsBootstrapUserDataOptions _userData;
-        private readonly AwsBootstrapNetworkInterfacesOptionsBuilder _networkInterfaces;
+        private readonly IOfferAwsBootstrapNetworkInterfacesOptions _networkInterfaces;
         private readonly IOfferAwsBootstrapDisksOptions _disks;
-        private AwsBootstrapNetworkInterfaceOptionsValues _networkInterfaceValues;
+        private readonly IOfferAwsTagOptions _tags;
 
         public AwsBootstrapOptionsBuilder(string bootstrapId)
         {
-            _values = new AwsBootstrapOptionsValues(new RunInstancesRequest());
+            _values = new AwsBootstrapOptionsValues(bootstrapId);
             _values.InstanceRequest.ClientToken = bootstrapId;
-
-            _values.Image = new AwsBootstrapImageValues();
 
             _image = new AwsBootstrapImageOptionsBuilder(_values.Image, this);
             _userData = new AwsBootstrapUserDataOptionsBuilder(_values.InstanceRequest, this);
@@ -55,7 +28,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 
             _networkInterfaces = new AwsBootstrapNetworkInterfacesOptionsBuilder(_values.NetworkInterfaceValues, this);
             _disks = new AwsBootstrapDisksOptionsBuilder(_values.InstanceRequest.BlockDeviceMappings, this);
-            InstanceCount(1, 1);
+            _tags = new AwsBootstrapTagOptionsBuilder(_values.Tags, this);
         }
 
         public IOfferAwsBootstrapOptions Credentials(string profileName)
@@ -83,6 +56,8 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
         public IOfferAwsBootstrapNetworkInterfacesOptions NetworkInterfaces { get { return _networkInterfaces; } }
 
         public IOfferAwsBootstrapDisksOptions Disks { get { return _disks; } }
+
+        public IOfferAwsTagOptions Tags { get { return _tags; } }
 
         public IOfferAwsBootstrapOptions InstanceType(string instanceType)
         {
@@ -168,19 +143,5 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
             _values.ManagementAddressType = type;
             return this;
         }
-    }
-
-    internal class AwsBootstrapNetworkInterfaceOptionsValues
-    {
-        private readonly List<InstanceNetworkInterfaceSpecification> _networkInterfaces;
-
-        public AwsBootstrapNetworkInterfaceOptionsValues(List<InstanceNetworkInterfaceSpecification> interfaces)
-        {
-            _networkInterfaces = interfaces;
-        }
-
-        public List<InstanceNetworkInterfaceSpecification> NetworkInterfaces { get { return _networkInterfaces; } }
-
-        public int? RemoteManagementInterfaceIndex { get; set; }
     }
 }

@@ -14,6 +14,7 @@ namespace ConDep.Dsl.Operations.Aws
         {
             _localOps = localOps;
             _ec2 = new AwsEc2OperationsBuilder(this);
+            _elb = new AwsElbOperationsBuilder(this);
         }
 
         public IOfferAwsEc2Operations Ec2 { get { return _ec2; } }

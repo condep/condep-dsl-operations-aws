@@ -1,6 +1,6 @@
-namespace ConDep.Dsl
+namespace ConDep.Dsl.Operations.Aws
 {
-    public class AwsBootstrapMandatoryCredentials
+    internal class AwsCredentials
     {
         public bool UseProfile { get { return !string.IsNullOrEmpty(ProfileName); } }
         public string ProfileName { get; set; }

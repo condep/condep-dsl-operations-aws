@@ -1,11 +1,15 @@
 using System.Diagnostics;
 using System.Threading;
 using Amazon;
+using Amazon.EC2.Model;
+using Amazon.Runtime;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Execution;
 using ConDep.Dsl.Harvesters;
+using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using ConDep.Dsl.Remote;
 using ConDep.Dsl.Validation;
 using Microsoft.CSharp.RuntimeBinder;
@@ -14,25 +18,19 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
 {
     internal class AwsBootstrapOperation : LocalOperation
     {
-        private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
-        private readonly AwsBootstrapOptionsBuilder _options;
+        private readonly AwsBootstrapOptionsValues _options;
 
-        public AwsBootstrapOperation(AwsBootstrapMandatoryInputValues mandatoryOptions)
+        public AwsBootstrapOperation(AwsBootstrapOptionsValues options)
         {
-            _mandatoryOptions = mandatoryOptions;
-        }
-
-        public AwsBootstrapOperation(AwsBootstrapMandatoryInputValues mandatoryOptions, AwsBootstrapOptionsBuilder options)
-        {
-            _mandatoryOptions = mandatoryOptions;
             _options = options;
         }
 
         public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
         {
-            Debugger.Launch();
             LoadOptionsFromConfig(settings);
-            var bootstrapper = new Ec2Bootstrapper(_mandatoryOptions, _options);
+            ValidateMandatoryOptions(_options);
+
+            var bootstrapper = new Ec2Bootstrapper(_options);
             var ec2Config = bootstrapper.Boostrap();
 
             foreach (var instance in ec2Config.Instances)
@@ -58,54 +56,69 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
         }
 
-        private void ValidateMandatoryOptions(AwsBootstrapMandatoryInputValues config)
+        private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options)
         {
-            if (config.SubnetId == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for SubnetId must be present for operation {0}.", GetType().Name));
-            if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-            if (config.PrivateKeyFileLocation == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PrivateKeyFileLocation must be present for operation {0}.", GetType().Name));
-            if (config.PublicKeyName == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for PublicKeyName must be present for operation {0}.", GetType().Name));
-            if (config.Credentials == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials must be present for operation {0}.", GetType().Name));
-            if (config.Region == null) throw new OperationConfigException(string.Format("Configuration in environment configuration file for Region must be present for operation {0}.", GetType().Name));
+            if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId)) throw new OperationConfigException(string.Format("Missing value for SubnetId. Please specify in code or in config."));
+            if (string.IsNullOrWhiteSpace(options.InstanceRequest.KeyName)) throw new OperationConfigException(string.Format("Missing value for PublicKeyName. Please specify in code or in config."));
+            if (string.IsNullOrWhiteSpace(options.PrivateKeyFileLocation)) throw new OperationConfigException(string.Format("Missing value for PrivateKeyFileLocation. Please specify in code or in config."));
+
+            if (options.RegionEndpoint == null) throw new OperationConfigException(string.Format("Missing value for Region. Please specify in code or in config."));
+            if (options.Credentials == null) throw new OperationConfigException(string.Format("Missing value for Credentials. Please specify in code or in config."));
+
+            if (options.InstanceRequest.Placement == null) throw new OperationConfigException(string.Format("Missing value for AvailabilityZone. Please specify in code or in config."));
+            if (options.InstanceRequest.SecurityGroupIds.Count == 0) Logger.Warn("No value for SecurityGroupIds given. Default Security Group will be used.");
+            if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId)) Logger.Warn("No value for SubnetId given. Default Subnet will be used."); 
+            if (!options.Image.HasImageId() && !options.Image.HasLatestImageDefined()) Logger.Warn("No value for Image given. Latest defined Windows Image will be used.");
+            if (string.IsNullOrWhiteSpace(options.InstanceRequest.InstanceType)) Logger.Warn("No value for InstanceType given. Default Instance Type will be used.");
         }
 
         private void LoadOptionsFromConfig(ConDepSettings settings)
         {
-            if (settings.Config.OperationsConfig == null || settings.Config.OperationsConfig.AwsBootstrapOperation == null)
+            if (settings.Config.OperationsConfig == null || (settings.Config.OperationsConfig.AwsBootstrapOperation == null && settings.Config.OperationsConfig.AwsBootstrapOperation == null))
             {
                 return;
             }
 
-            var config = settings.Config.OperationsConfig.AwsBootstrapOperation;
+            var dynamicBootstrapConfig = settings.Config.OperationsConfig.AwsBootstrapOperation;
+            var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
+
             try
             {
-                if (string.IsNullOrWhiteSpace(_mandatoryOptions.PublicKeyName)) _mandatoryOptions.PublicKeyName = config.PublicKeyName;
-                if (string.IsNullOrWhiteSpace(_mandatoryOptions.PrivateKeyFileLocation)) _mandatoryOptions.PrivateKeyFileLocation = config.PrivateKeyFileLocation;
-                if (string.IsNullOrWhiteSpace(_mandatoryOptions.SubnetId)) _mandatoryOptions.SubnetId = config.SubnetId;
-                if (string.IsNullOrWhiteSpace(_mandatoryOptions.Region)) _mandatoryOptions.Region = config.Region;
-                if (_mandatoryOptions.RegionEndpoint == null) _mandatoryOptions.RegionEndpoint = RegionEndpoint.GetBySystemName((string)config.Region);
-
-                string profileName = config.Credentials.ProfileName;
-                if (string.IsNullOrEmpty(profileName))
+                if (dynamicAwsConfig != null)
                 {
-                    _mandatoryOptions.Credentials.UseProfile = false;
-                    if (config.Credentials.AccessKey == null)
-                        throw new OperationConfigException(
-                            string.Format(
-                                "Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                GetType().Name));
-                    if (config.Credentials.SecretKey == null)
-                        throw new OperationConfigException(
-                            string.Format(
-                                "Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                GetType().Name));
+                    if (string.IsNullOrWhiteSpace(_options.InstanceRequest.KeyName) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PublicKeyName)) _options.InstanceRequest.KeyName = dynamicAwsConfig.PublicKeyName;
+                    if (string.IsNullOrWhiteSpace(_options.PrivateKeyFileLocation) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PrivateKeyFileLocation)) _options.PrivateKeyFileLocation = dynamicAwsConfig.PrivateKeyFileLocation;
+                    if (_options.InstanceRequest.Placement == null && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.AvailabilityZone)) _options.InstanceRequest.Placement = new Placement((string)dynamicAwsConfig.AvailabilityZone);
+                    if (_options.RegionEndpoint == null && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.Region)) _options.RegionEndpoint = RegionEndpoint.GetBySystemName((string)dynamicAwsConfig.Region);
 
-                    _mandatoryOptions.Credentials.AccessKey = config.Credentials.AccessKey;
-                    _mandatoryOptions.Credentials.SecretKey = config.Credentials.SecretKey;
+                    if (_options.Credentials == null)
+                    {
+                        string profileName = dynamicAwsConfig.Credentials.ProfileName;
+                        if (string.IsNullOrEmpty(profileName))
+                        {
+                            if (dynamicAwsConfig.Credentials.AccessKey == null)
+                                throw new OperationConfigException(
+                                    string.Format(
+                                        "Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
+                                        GetType().Name));
+                            if (dynamicAwsConfig.Credentials.SecretKey == null)
+                                throw new OperationConfigException(
+                                    string.Format(
+                                        "Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
+                                        GetType().Name));
+
+                            _options.Credentials = new BasicAWSCredentials((string)dynamicAwsConfig.Credentials.AccessKey, (string)dynamicAwsConfig.Credentials.SecretKey);
+                        }
+                        else
+                        {
+                            _options.Credentials = new StoredProfileAWSCredentials((string)dynamicAwsConfig.Credentials.ProfileName);
+                        }
+                    }
                 }
-                else
+
+                if (dynamicBootstrapConfig != null)
                 {
-                    _mandatoryOptions.Credentials.UseProfile = true;
-                    _mandatoryOptions.Credentials.ProfileName = config.Credentials.ProfileName;
+                    if (string.IsNullOrWhiteSpace(_options.InstanceRequest.SubnetId) && !string.IsNullOrWhiteSpace((string)dynamicBootstrapConfig.SubnetId)) _options.InstanceRequest.SubnetId = dynamicBootstrapConfig.SubnetId;
                 }
             }
             catch (RuntimeBinderException binderException)

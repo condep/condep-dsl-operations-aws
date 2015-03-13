@@ -1,32 +1,27 @@
-﻿using Amazon;
-using Amazon.EC2;
-using Amazon.Runtime;
-using ConDep.Dsl;
+﻿using Amazon.EC2;
+using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
+using ConDep.Dsl.Operations.Aws.Ec2.Model;
 
-namespace ConDep.Dsl.Terminate
+namespace ConDep.Dsl.Operations.Aws.Terminate
 {
-    public class Ec2Terminator
+    internal class Ec2Terminator
     {
-        private readonly AwsBootstrapMandatoryInputValues _mandatoryOptions;
+        private readonly AwsBootstrapOptionsValues _options;
         private readonly IAmazonEC2 _client;
         private Ec2InstanceHandler _instanceHandler;
 
-        public Ec2Terminator(AwsBootstrapMandatoryInputValues mandatoryOptions)
+        public Ec2Terminator(AwsBootstrapOptionsValues options)
         {
-            _mandatoryOptions = mandatoryOptions;
-
-            AWSCredentials creds = _mandatoryOptions.Credentials.UseProfile ? (AWSCredentials)new StoredProfileAWSCredentials(_mandatoryOptions.Credentials.ProfileName) : new BasicAWSCredentials(_mandatoryOptions.Credentials.AccessKey, _mandatoryOptions.Credentials.SecretKey);
-            AmazonEC2Config config = new AmazonEC2Config { RegionEndpoint = _mandatoryOptions.RegionEndpoint };
-
-            _client = AWSClientFactory.CreateAmazonEC2Client(creds, config);
-
+            _options = options;
+            var config = new AmazonEC2Config { RegionEndpoint = _options.RegionEndpoint };
+            _client = new AmazonEC2Client(_options.Credentials, config);
             _instanceHandler = new Ec2InstanceHandler(_client);
         }
 
         public void Terminate()
         {
-            _instanceHandler.Terminate(_mandatoryOptions.BootstrapId);
+            _instanceHandler.Terminate(_options.InstanceRequest.ClientToken);
         }
     }
 }

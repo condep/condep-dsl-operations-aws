@@ -16,5 +16,7 @@ namespace ConDep.Dsl
         IOfferAwsBootstrapDisksOptions Disks { get; }
         IOfferAwsBootstrapOptions SecurityGroupIds(params string[] ids);
         IOfferAwsBootstrapOptions RemoteManagementAddressType(RemoteManagementAddressType type);
+        IOfferAwsBootstrapOptions Region(string region);
+        IOfferAwsTagOptions Tags { get; } 
     }
 }
