@@ -58,7 +58,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
 
         private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options)
         {
-            if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId)) throw new OperationConfigException(string.Format("Missing value for SubnetId. Please specify in code or in config."));
+            if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId) && !PrimaryNetworkInterfaceDefined(options)) throw new OperationConfigException(string.Format("Missing value for SubnetId. Please specify in code (using SubnetId or specify in NetworkInterface) or in config."));
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.KeyName)) throw new OperationConfigException(string.Format("Missing value for PublicKeyName. Please specify in code or in config."));
             if (string.IsNullOrWhiteSpace(options.PrivateKeyFileLocation)) throw new OperationConfigException(string.Format("Missing value for PrivateKeyFileLocation. Please specify in code or in config."));
 
@@ -70,6 +70,14 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId)) Logger.Warn("No value for SubnetId given. Default Subnet will be used."); 
             if (!options.Image.HasImageId() && !options.Image.HasLatestImageDefined()) Logger.Warn("No value for Image given. Latest defined Windows Image will be used.");
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.InstanceType)) Logger.Warn("No value for InstanceType given. Default Instance Type will be used.");
+        }
+
+        private bool PrimaryNetworkInterfaceDefined(AwsBootstrapOptionsValues options)
+        {
+            if (options.NetworkInterfaceValues == null || options.NetworkInterfaceValues.NetworkInterfaces.Count == 0)
+                return false;
+
+            return !string.IsNullOrWhiteSpace(options.NetworkInterfaceValues.NetworkInterfaces[0].SubnetId) ;
         }
 
         private void LoadOptionsFromConfig(ConDepSettings settings)
