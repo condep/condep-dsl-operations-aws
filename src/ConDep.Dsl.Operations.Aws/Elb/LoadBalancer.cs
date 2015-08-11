@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using Amazon;
 using Amazon.EC2;
 using Amazon.EC2.Model;
@@ -50,20 +51,33 @@ namespace ConDep.Dsl.Operations.Aws.Elb
 
         public string GetInstanceId(AmazonEC2Client client, string serverName)
         {
+            var filter = new Filter();
+
+            if (IsIp(serverName))
+            {
+                filter.Name = "ip-address";
+                filter.Values = new[] {serverName}.ToList();
+            }
+            else
+            {
+                filter.Name = "dns-name";
+                filter.Values = new[] {serverName}.ToList();
+            }
+
             var instancesRequest = new DescribeInstancesRequest
             {
-                Filters = new List<Filter>
-                {
-                    new Filter
-                    {
-                        Name = "dns-name",
-                        Values = new[] {serverName}.ToList()
-                    }
-                }
+                Filters = new List<Filter>{ filter }
             };
+
             var instances = client.DescribeInstances(instancesRequest);
             Logger.Info("Found instances: {0}", string.Join(", ", instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId))));
             return instances.Reservations.Single().Instances.Single().InstanceId;
+        }
+
+        private bool IsIp(string serverName)
+        {
+            IPAddress ip;
+            return IPAddress.TryParse(serverName, out ip);
         }
 
         private RegionEndpoint GetEndpoint(dynamic customConfig)
