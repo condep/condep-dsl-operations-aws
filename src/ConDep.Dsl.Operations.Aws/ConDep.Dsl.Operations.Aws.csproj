@@ -125,6 +125,11 @@
     <Compile Include="Elb\IOfferAwsElbSecurityGroups.cs" />
     <Compile Include="Elb\IOfferAwsElbSubnets.cs" />
     <Compile Include="Elb\IOfferAwsElbTags.cs" />
+    <Compile Include="S3\AwsS3DownloadOperation.cs" />
+    <Compile Include="S3\AwsS3Extensions.cs" />
+    <Compile Include="S3\AwsS3OperationsBuilder.cs" />
+    <Compile Include="S3\AwsS3UploadOperation.cs" />
+    <Compile Include="S3\IOfferAwsS3Operations.cs" />
     <Compile Include="OperationConfigException.cs" />
     <Compile Include="Ec2\RemoteManagementAddressType.cs" />
     <Compile Include="Ec2\IOfferAwsEc2Operations.cs" />
