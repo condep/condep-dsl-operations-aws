@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Amazon.EC2;
 using Amazon.EC2.Model;
+using Amazon.RDS.Model;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
@@ -30,11 +31,15 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
         public Ec2BootstrapConfig Boostrap()
         {
-            var config = new Ec2BootstrapConfig(_options.InstanceRequest.ClientToken);
+            Ec2BootstrapConfig config;
 
-            if (_instanceHandler.AllreadyBootstrapped(_options.InstanceRequest.ClientToken))
+            config = _options.IdempotencyType == AwsEc2IdempotencyType.ClientToken ? 
+                new Ec2BootstrapConfig(_options.InstanceRequest.ClientToken) : 
+                new Ec2BootstrapConfig(_options.IdempotencyTags);
+
+            if (_instanceHandler.AllreadyBootstrapped(_options))
             {
-                return GetConfigFromExisting(config);
+                return GetConfigFromExisting(_options, config);
             }
 
             return BootstrapNew(config);
@@ -127,15 +132,18 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             return config;
         }
 
-        private Ec2BootstrapConfig GetConfigFromExisting(Ec2BootstrapConfig config)
+        private Ec2BootstrapConfig GetConfigFromExisting(AwsBootstrapOptionsValues options, Ec2BootstrapConfig config)
         {
             Logger.Info("Allready bootstrapped. Getting server information.");
-            var existingInstances = _instanceHandler.GetInstances(_options.InstanceRequest.ClientToken).ToList();
+            
+            var existingInstances = options.IdempotencyType == AwsEc2IdempotencyType.ClientToken ? 
+                _instanceHandler.GetInstances(_options.InstanceRequest.ClientToken).ToList() : 
+                _instanceHandler.GetInstances(_options.IdempotencyTags).ToList();
 
             var existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId),
                 _options.PrivateKeyFileLocation);
 
-            foreach (var instance in existingInstances)
+            foreach (var instance in existingInstances.Where(x => x.State.Name == "Running"))
             {
                 config.Instances.Add(new Ec2Instance
                 {
@@ -215,54 +223,53 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 }
             });
         }
-        private static void HaveAccessToServer(Ec2Instance instance, int attemptNum, int numOfRetries)
+
+        private static void HaveAccessToServer(Ec2Instance instance, int attemptNum, int maxRetries)
         {
-            Logger.WithLogSection(
-                string.Format("({1}/{2}) Checking if WinRM (Remote PowerShell) can be used to reach remote server [{0}]...",
-                              instance.ManagementAddress, attemptNum, numOfRetries), () =>
-                              {
-                                  var cmd = string.Format("id -r:{0} -u:{1} -p:\"{2}\"", instance.ManagementAddress, instance.UserName, instance.Password);
+            Logger.Info(string.Format("({1}/{2}) Checking if WinRM (Remote PowerShell) can be used to reach remote server [{0}]...", instance.InstanceId, attemptNum, maxRetries));
 
-                                  var path = Environment.ExpandEnvironmentVariables(@"%windir%\system32\WinRM.cmd");
-                                  var startInfo = new ProcessStartInfo(path)
-                                  {
-                                      Arguments = cmd,
-                                      Verb = "RunAs",
-                                      UseShellExecute = false,
-                                      WindowStyle = ProcessWindowStyle.Hidden,
-                                      RedirectStandardError = true,
-                                      RedirectStandardOutput = true
-                                  };
-                                  var process = Process.Start(startInfo);
-                                  process.WaitForExit();
+            var cmd = string.Format("id -r:{0} -u:{1} -p:\"{2}\"", instance.ManagementAddress, instance.UserName, instance.Password);
 
-                                  if (process.ExitCode == 0)
-                                  {
-                                      var message = process.StandardOutput.ReadToEnd();
-                                      Logger.Info(string.Format("Contact was made with server [{0}] using WinRM (Remote PowerShell). ",
-                                                                instance.ManagementAddress));
-                                      Logger.Info(string.Format("Details: {0} ", message));
-                                  }
-                                  else
-                                  {
-                                      var errorMessage = process.StandardError.ReadToEnd();
-                                      if (numOfRetries > 0)
-                                      {
-                                          Logger.Info(string.Format("Unable to reach server [{0}] using WinRM (Remote PowerShell)",
-                                              instance.ManagementAddress));
-                                          Logger.Info("Waiting 30 seconds before retry...");
-                                          Thread.Sleep(30000);
-                                          HaveAccessToServer(instance, ++attemptNum, --numOfRetries);
-                                      }
-                                      else
-                                      {
-                                          Logger.Error(string.Format("Unable to reach server [{0}] using WinRM (Remote PowerShell)",
-                                              instance.ManagementAddress));
-                                          Logger.Error(string.Format("Details: {0}", errorMessage));
-                                          Logger.Error("Max number of retries exceeded. Please check your Amazon Network firewall for why WinRM cannot connect.");
-                                      }
-                                  }
-                              });
+            var path = Environment.ExpandEnvironmentVariables(@"%windir%\system32\WinRM.cmd");
+            var startInfo = new ProcessStartInfo(path)
+            {
+                Arguments = cmd,
+                Verb = "RunAs",
+                UseShellExecute = false,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true
+            };
+
+            var process = Process.Start(startInfo);
+            process.WaitForExit();
+
+            if (process.ExitCode == 0)
+            {
+                var message = process.StandardOutput.ReadToEnd();
+                Logger.Info(string.Format("Contact was made with server [{0}] using WinRM (Remote PowerShell). ",
+                                        instance.ManagementAddress));
+                Logger.Info(string.Format("Details: {0} ", message));
+            }
+            else
+            {
+                var errorMessage = process.StandardError.ReadToEnd();
+                if (attemptNum <= maxRetries)
+                {
+                    Logger.Info(string.Format("Unable to reach server [{0}] using WinRM (Remote PowerShell)",
+                        instance.ManagementAddress));
+                    Logger.Info("Waiting 30 seconds before retry...");
+                    Thread.Sleep(30000);
+                    HaveAccessToServer(instance, ++attemptNum, maxRetries);
+                }
+                else
+                {
+                    Logger.Error(string.Format("Unable to reach server [{0}] using WinRM (Remote PowerShell)",
+                        instance.ManagementAddress));
+                    Logger.Error(string.Format("Details: {0}", errorMessage));
+                    Logger.Error("Max number of retries exceeded. Please check your Amazon Network firewall for why WinRM cannot connect.");
+                }
+            }
         }
 
     }

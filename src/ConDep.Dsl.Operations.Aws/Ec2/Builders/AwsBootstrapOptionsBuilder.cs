@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Amazon;
 using Amazon.EC2;
@@ -28,7 +29,25 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 
             _networkInterfaces = new AwsBootstrapNetworkInterfacesOptionsBuilder(_values.NetworkInterfaceValues, this);
             _disks = new AwsBootstrapDisksOptionsBuilder(_values.InstanceRequest.BlockDeviceMappings, this);
-            _tags = new AwsBootstrapTagOptionsBuilder(_values.Tags, this);
+            _tags = new AwsBootstrapTagOptionsBuilder(_values.Tags);
+        }
+
+        public AwsBootstrapOptionsBuilder(Action<IOfferAwsTagOptions> tags)
+        {
+            _values = new AwsBootstrapOptionsValues();
+
+            var idempotenseTagBuilder = new AwsBootstrapTagOptionsBuilder(_values.IdempotencyTags);
+            var tagBuilder = new AwsBootstrapTagOptionsBuilder(_values.Tags);
+            tags(idempotenseTagBuilder);
+            tags(tagBuilder);
+
+            _image = new AwsBootstrapImageOptionsBuilder(_values.Image, this);
+            _userData = new AwsBootstrapUserDataOptionsBuilder(_values.InstanceRequest, this);
+
+            _values.NetworkInterfaceValues = new AwsBootstrapNetworkInterfaceOptionsValues(_values.InstanceRequest.NetworkInterfaces);
+
+            _networkInterfaces = new AwsBootstrapNetworkInterfacesOptionsBuilder(_values.NetworkInterfaceValues, this);
+            _disks = new AwsBootstrapDisksOptionsBuilder(_values.InstanceRequest.BlockDeviceMappings, this);
         }
 
         public IOfferAwsBootstrapOptions Credentials(string profileName)

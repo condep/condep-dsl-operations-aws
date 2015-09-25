@@ -45,7 +45,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             var response = _client.GetPasswordData(passwordRequest);
             if (string.IsNullOrWhiteSpace(response.PasswordData))
             {
-                Logger.Info("Password not ready, waiting 30 seconds...");
+                Logger.Info(string.Format("Password not yet ready for {0}, waiting 30 seconds...", instanceId));
                 Thread.Sleep(30000);
                 return WaitForPassword(instanceId, key);
             }

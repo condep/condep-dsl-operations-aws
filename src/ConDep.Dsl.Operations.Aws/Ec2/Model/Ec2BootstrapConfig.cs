@@ -11,6 +11,12 @@ namespace ConDep.Dsl
             BootstrapId = bootstrapId;
         }
 
+        public Ec2BootstrapConfig(List<KeyValuePair<string, string>> idempotencyTags)
+        {
+            IdempotencyTags = idempotencyTags;
+        }
+
+
         public string BootstrapId { get; private set; }
 
         public List<Ec2Instance> Instances
@@ -22,5 +28,6 @@ namespace ConDep.Dsl
         public string AwsProfileName { get; set; }
         public string SecurityGroupId { get; set; }
         public string SecurityGroupTag { get; set; }
+        public List<KeyValuePair<string, string>> IdempotencyTags { get; set; }
     }
 }

@@ -2,7 +2,8 @@ namespace ConDep.Dsl
 {
     public interface IOfferAwsTagOptions
     {
-        IOfferAwsBootstrapOptions Add(string name, string value);
-        IOfferAwsBootstrapOptions AddName(string value);
+        IOfferAwsTagOptions Add(string name, string value);
+        IOfferAwsTagOptions Add(string name);
+        IOfferAwsTagOptions AddName(string value);
     }
 }

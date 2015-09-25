@@ -4,7 +4,6 @@ using Amazon;
 using Amazon.EC2.Model;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
-using ConDep.Dsl.Execution;
 using ConDep.Dsl.Harvesters;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
@@ -12,6 +11,8 @@ using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using ConDep.Dsl.Remote;
 using ConDep.Dsl.Validation;
+using ConDep.Execution;
+using ConDep.Execution.Validation;
 using Microsoft.CSharp.RuntimeBinder;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2
@@ -48,7 +49,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 });
             }
 
-            var serverValidator = new RemoteServerValidator(settings.Config.Servers, HarvesterFactory.GetHarvester(settings));
+            var serverValidator = new RemoteServerValidator(settings.Config.Servers, HarvesterFactory.GetHarvester(settings), new PowerShellExecutor());
             if (!serverValidator.IsValid())
             {
                 throw new ConDepValidationException("Not all servers fulfill ConDep's requirements. Aborting execution.");
@@ -96,6 +97,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 {
                     if (string.IsNullOrWhiteSpace(_options.InstanceRequest.KeyName) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PublicKeyName)) _options.InstanceRequest.KeyName = dynamicAwsConfig.PublicKeyName;
                     if (string.IsNullOrWhiteSpace(_options.PrivateKeyFileLocation) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PrivateKeyFileLocation)) _options.PrivateKeyFileLocation = dynamicAwsConfig.PrivateKeyFileLocation;
+                    if (string.IsNullOrWhiteSpace(_options.InstanceRequest.SubnetId) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.SubnetId)) _options.InstanceRequest.SubnetId = dynamicAwsConfig.SubnetId;
                     if (_options.InstanceRequest.Placement == null && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.AvailabilityZone)) _options.InstanceRequest.Placement = new Placement((string)dynamicAwsConfig.AvailabilityZone);
                     if (_options.RegionEndpoint == null && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.Region)) _options.RegionEndpoint = RegionEndpoint.GetBySystemName((string)dynamicAwsConfig.Region);
 

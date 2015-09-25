@@ -1,28 +1,32 @@
 using System.Collections.Generic;
+using Amazon.DynamoDBv2;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {
     internal class AwsBootstrapTagOptionsBuilder : IOfferAwsTagOptions
     {
         private readonly List<KeyValuePair<string, string>> _tags;
-        private readonly IOfferAwsBootstrapOptions _awsBootstrapOptionsBuilder;
 
-        public AwsBootstrapTagOptionsBuilder(List<KeyValuePair<string, string>> tags, IOfferAwsBootstrapOptions awsBootstrapOptionsBuilder)
+        public AwsBootstrapTagOptionsBuilder(List<KeyValuePair<string, string>> tags)
         {
             _tags = tags;
-            _awsBootstrapOptionsBuilder = awsBootstrapOptionsBuilder;
         }
 
-        public IOfferAwsBootstrapOptions Add(string name, string value)
+        public IOfferAwsTagOptions Add(string name, string value)
         {
             _tags.Add(new KeyValuePair<string, string>(name, value));
-            return _awsBootstrapOptionsBuilder;
+            return this;
         }
 
-        public IOfferAwsBootstrapOptions AddName(string value)
+        public IOfferAwsTagOptions Add(string name)
+        {
+            return Add(name, "");
+        }
+
+        public IOfferAwsTagOptions AddName(string value)
         {
             _tags.Add(new KeyValuePair<string, string>("Name", value));
-            return _awsBootstrapOptionsBuilder;
+            return this;
         }
     }
 }

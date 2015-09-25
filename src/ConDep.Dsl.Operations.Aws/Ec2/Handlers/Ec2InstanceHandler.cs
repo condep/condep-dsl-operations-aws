@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Amazon.DeviceFarm.Model;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
@@ -26,9 +27,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             return instances.Reservations.SelectMany(x => x.Instances);
         }
 
-        public bool AllreadyBootstrapped(string bootstrapId)
+        public bool AllreadyBootstrapped(AwsBootstrapOptionsValues options)
         {
-            return GetInstances(bootstrapId).Any();
+            if (options.IdempotencyType == AwsEc2IdempotencyType.ClientToken) return GetInstances(options.InstanceRequest.ClientToken).Any();
+            if (options.IdempotencyType == AwsEc2IdempotencyType.Tags) return GetInstances(options.IdempotencyTags).Any();
+
+            throw new ArgumentException("options.IdempotencyType");
         }
 
         public IEnumerable<Instance> GetInstances(string bootstrapId)
@@ -44,9 +48,29 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                     }
                 }
             };
-            var instances = _client.DescribeInstances(instancesRequest);
-            Logger.Info("Found instances: {0}", string.Join(", ", instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId))));
-            return instances.Reservations.SelectMany(x => x.Instances);
+            return GetInstances(instancesRequest);
+        }
+
+        public IEnumerable<Instance> GetInstances(IEnumerable<KeyValuePair<string, string>> idempotencyTags)
+        {
+            var instancesRequest = new DescribeInstancesRequest
+            {
+                Filters = CreateIdempotencyTagsFilter(idempotencyTags).ToList()
+            };
+            return GetInstances(instancesRequest);
+        }
+
+        private IEnumerable<Instance> GetInstances(DescribeInstancesRequest request)
+        {
+            request.Filters.Add(new Filter("instance-state-code", new []{"48"}.ToList()));
+            var instances = _client.DescribeInstances(request);
+            Logger.Info("Found instances: {0}", string.Join(", ", instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId + "(" + y.State.Name + ")"))));
+            return instances.Reservations.SelectMany(x => x.Instances).Where(x => x.State.Name != "terminated");
+        } 
+
+        private IEnumerable<Filter> CreateIdempotencyTagsFilter(IEnumerable<KeyValuePair<string, string>> idempotencyTags)
+        {
+            return idempotencyTags.Select(tag => new Filter("tag:" + tag.Key, new [] {tag.Value}.ToList()));
         }
 
         public IEnumerable<string> CreateInstances(AwsBootstrapOptionsValues request)

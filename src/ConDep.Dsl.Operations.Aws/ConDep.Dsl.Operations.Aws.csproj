@@ -37,13 +37,21 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.2.3.50.1\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Dsl, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ConDep.Dsl.4.0.0\lib\net40\ConDep.Dsl.dll</HintPath>
+    <Reference Include="ConDep.Dsl, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConDep.Dsl.5.0.0-beta2\lib\net40\ConDep.Dsl.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="ConDep.Dsl.Operations, Version=3.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ConDep.Dsl.Operations.3.2.1\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+    <Reference Include="ConDep.Dsl.Operations, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConDep.Dsl.Operations.5.0.0-beta1\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ConDep.Execution, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConDep.Execution.1.0.16-beta\lib\net40\ConDep.Execution.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ionic.Zip, Version=1.9.6.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.9.6\lib\net20\Ionic.Zip.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
@@ -67,12 +75,10 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="YamlDotNet">
-      <HintPath>..\packages\YamlDotNet.3.5.1\lib\net35\YamlDotNet.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AwsOperationsBuilder.cs" />
+    <Compile Include="Ec2\Builders\AwsEc2IdempotencyType.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapNetworkInterfaceOptionsValues.cs" />
     <Compile Include="Ec2\Builders\AwsBootstrapTagOptionsBuilder.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapOptionsValues.cs" />

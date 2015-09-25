@@ -11,10 +11,19 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Model
         private readonly RunInstancesRequest _request;
         private readonly List<KeyValuePair<string, string>> _tags = new List<KeyValuePair<string, string>>();
         private readonly AwsBootstrapImageValues _image = new AwsBootstrapImageValues();
+        private readonly AwsEc2IdempotencyType _idempotencyType;
+        private readonly List<KeyValuePair<string, string>> _idempotencyTags = new List<KeyValuePair<string, string>>();
 
         public AwsBootstrapOptionsValues(string bootstrapId)
         {
+            _idempotencyType = AwsEc2IdempotencyType.ClientToken;
             _request = new RunInstancesRequest {ClientToken = bootstrapId, MinCount = 1, MaxCount = 1};
+        }
+
+        public AwsBootstrapOptionsValues()
+        {
+            _idempotencyType = AwsEc2IdempotencyType.Tags;
+            _request = new RunInstancesRequest { MinCount = 1, MaxCount = 1 };
         }
 
         public RunInstancesRequest InstanceRequest
@@ -29,5 +38,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Model
         public RemoteManagementAddressType? ManagementAddressType { get; set; }
         public AwsBootstrapNetworkInterfaceOptionsValues NetworkInterfaceValues { get; set; }
         public List<KeyValuePair<string, string>> Tags { get { return _tags; } }
+        public List<KeyValuePair<string, string>> IdempotencyTags { get { return _idempotencyTags; } }
+        public AwsEc2IdempotencyType IdempotencyType { get { return _idempotencyType; } }
     }
 }
