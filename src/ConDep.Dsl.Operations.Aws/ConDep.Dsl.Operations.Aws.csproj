@@ -83,6 +83,9 @@
     <Compile Include="Ec2\Builders\AwsBootstrapTagOptionsBuilder.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapOptionsValues.cs" />
     <Compile Include="Ec2\IOfferAwsTagOptions.cs" />
+    <Compile Include="Ec2\Model\AwsTerminateOptionsValues.cs" />
+    <Compile Include="Ec2\Terminate\AwsTerminateOperation.cs" />
+    <Compile Include="Ec2\Terminate\Ec2Terminator.cs" />
     <Compile Include="Elb\AwsElbExtensions.cs" />
     <Compile Include="Ec2\AwsEc2Extensions.cs" />
     <Compile Include="AwsExtensions.cs" />
@@ -145,10 +148,6 @@
     <Compile Include="IOfferAwsOperations.cs" />
     <Compile Include="Vpc\IOfferAwsVpcOperations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Terminate\AwsTerminateOperation.cs" />
-    <Compile Include="Terminate\AwsTerminateOperations.cs" />
-    <Compile Include="Terminate\Ec2Terminator.cs" />
-    <Compile Include="Terminate\IOfferAwsTerminateOperations.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
