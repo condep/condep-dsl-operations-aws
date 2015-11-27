@@ -38,15 +38,15 @@
       <HintPath>..\packages\AWSSDK.2.3.50.1\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
     <Reference Include="ConDep.Dsl, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConDep.Dsl.5.0.0-beta2\lib\net40\ConDep.Dsl.dll</HintPath>
+      <HintPath>..\packages\ConDep.Dsl.5.0.0-beta93\lib\net40\ConDep.Dsl.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ConDep.Dsl.Operations, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConDep.Dsl.Operations.5.0.0-beta1\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
+      <HintPath>..\packages\ConDep.Dsl.Operations.5.0.0-beta8\lib\net40\ConDep.Dsl.Operations.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="ConDep.Execution, Version=1.0.16.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConDep.Execution.1.0.16-beta\lib\net40\ConDep.Execution.dll</HintPath>
+    <Reference Include="ConDep.Execution, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConDep.Execution.5.0.0-beta6\lib\net40\ConDep.Execution.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Ionic.Zip, Version=1.9.6.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
@@ -75,10 +75,18 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet, Version=3.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.3.7.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AwsOperationsBuilder.cs" />
+    <Compile Include="Ec2\AwsEc2DiscoverOperation.cs" />
+    <Compile Include="Ec2\AwsEc2DiscoverOptionsBuilder.cs" />
+    <Compile Include="Ec2\AwsEc2DiscoverOptionsValues.cs" />
     <Compile Include="Ec2\Builders\AwsEc2IdempotencyType.cs" />
+    <Compile Include="Ec2\IOfferAwsEc2DiscoverOptions.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapNetworkInterfaceOptionsValues.cs" />
     <Compile Include="Ec2\Builders\AwsBootstrapTagOptionsBuilder.cs" />
     <Compile Include="Ec2\Model\AwsBootstrapOptionsValues.cs" />
@@ -131,10 +139,14 @@
     <Compile Include="Elb\IOfferAwsElbSecurityGroups.cs" />
     <Compile Include="Elb\IOfferAwsElbSubnets.cs" />
     <Compile Include="Elb\IOfferAwsElbTags.cs" />
+    <Compile Include="S3\AwsS3CreateBucketOperation.cs" />
+    <Compile Include="S3\AwsS3DeleteBucketOperation.cs" />
+    <Compile Include="S3\AwsS3DeleteObjectOperation.cs" />
     <Compile Include="S3\AwsS3DownloadOperation.cs" />
     <Compile Include="S3\AwsS3Extensions.cs" />
     <Compile Include="S3\AwsS3OperationsBuilder.cs" />
     <Compile Include="S3\AwsS3UploadOperation.cs" />
+    <Compile Include="S3\AwsS3UploadOptionsBuilder.cs" />
     <Compile Include="S3\IOfferAwsS3Operations.cs" />
     <Compile Include="OperationConfigException.cs" />
     <Compile Include="Ec2\RemoteManagementAddressType.cs" />
@@ -143,6 +155,7 @@
     <Compile Include="Elb\IOfferAwsElbOperations.cs" />
     <Compile Include="Elb\LoadBalancer.cs" />
     <Compile Include="IOfferAwsOperations.cs" />
+    <Compile Include="S3\IOfferAwsS3UploadOptions.cs" />
     <Compile Include="Vpc\IOfferAwsVpcOperations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Terminate\AwsTerminateOperation.cs" />
@@ -151,7 +164,10 @@
     <Compile Include="Terminate\IOfferAwsTerminateOperations.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -17,6 +17,8 @@ namespace ConDep.Dsl
         IOfferAwsBootstrapOptions SecurityGroupIds(params string[] ids);
         IOfferAwsBootstrapOptions RemoteManagementAddressType(RemoteManagementAddressType type);
         IOfferAwsBootstrapOptions Region(string region);
-        IOfferAwsTagOptions Tags { get; } 
+        IOfferAwsTagOptions Tags { get; }
+        IOfferAwsBootstrapOptions Credentials(string profileName);
+        IOfferAwsBootstrapOptions Credentials(string accessKey, string secretKey);
     }
 }

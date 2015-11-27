@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.Ec2;
@@ -45,7 +46,7 @@ namespace ConDep.Dsl
         /// found in ConDep's environment file. If you prefer to specify settings directly, use
         /// the other overload and specify settings in code. 
         /// </summary>
-        /// <param name="bootstrap"></param>
+        /// <param name="ec2"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
         /// In AWS this is refered to as the Client Token.</param>
         /// <returns></returns>
@@ -88,7 +89,7 @@ namespace ConDep.Dsl
         /// them to ConDep's servers collection. This method assume mandatory settings not  
         /// specified in code is found in ConDep's environment file. 
         /// </summary>
-        /// <param name="bootstrap"></param>
+        /// <param name="ec2"></param>
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
         /// <param name="options">Additional configuration options for bootstrapping instances.</param>
         /// <returns></returns>
@@ -112,8 +113,8 @@ namespace ConDep.Dsl
         /// 
         /// </summary>
         /// <param name="ec2"></param>
-        /// <param name="instanceTags"></param>
-        /// <param name="options"></param>
+        /// <param name="tags">EC2 tags to make the instances created identifiable and therefore idempotent</param>
+        /// <param name="options">Additional configuration options for bootstrapping instances.</param>
         /// <returns></returns>
         public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsBootstrapOptions> options)
         {
@@ -135,6 +136,33 @@ namespace ConDep.Dsl
             //Configure.Operation(local, op);
             //return local;
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Search for AWS intances based on tags
+        /// </summary>
+        /// <param name="ec2"></param>
+        /// <param name="tags">The tags to match</param>
+        /// <returns></returns>
+        public static IOfferAwsOperations DiscoverInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsEc2DiscoverOptions> options = null)
+        {
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
+
+            var tagValues = new List<KeyValuePair<string, string>>();
+            var tagOptions = new AwsBootstrapTagOptionsBuilder(tagValues);
+            tags(tagOptions);
+
+            var awsOptions = new AwsEc2DiscoverOptionsBuilder();
+            if (options != null)
+            {
+                options(awsOptions);
+            }
+
+
+            var awsEc2DiscoverOperation = new AwsEc2DiscoverOperation(tagValues, awsOptions.Values);
+            Configure.Operation(awsOpsBuilder.LocalOperations, awsEc2DiscoverOperation);
+            return ec2Builder.AwsOperations;
         }
 
         public static IOfferAwsOperations StopInstances(this IOfferAwsEc2Operations ec2)

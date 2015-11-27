@@ -62,7 +62,6 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
         private IEnumerable<Instance> GetInstances(DescribeInstancesRequest request)
         {
-            request.Filters.Add(new Filter("instance-state-code", new []{"48"}.ToList()));
             var instances = _client.DescribeInstances(request);
             Logger.Info("Found instances: {0}", string.Join(", ", instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId + "(" + y.State.Name + ")"))));
             return instances.Reservations.SelectMany(x => x.Instances).Where(x => x.State.Name != "terminated");

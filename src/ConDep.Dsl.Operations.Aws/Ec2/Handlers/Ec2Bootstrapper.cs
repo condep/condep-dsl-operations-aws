@@ -6,6 +6,7 @@ using System.Threading;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using Amazon.RDS.Model;
+using ConDep.Dsl.Config;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
@@ -16,13 +17,15 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
     internal class Ec2Bootstrapper
     {
         private readonly AwsBootstrapOptionsValues _options;
+        private readonly ConDepSettings _conDepSettings;
         private readonly IAmazonEC2 _client;
         private readonly Ec2InstanceHandler _instanceHandler;
         private readonly Ec2InstancePasswordHandler _passwordHandler;
 
-        public Ec2Bootstrapper(AwsBootstrapOptionsValues options)
+        public Ec2Bootstrapper(AwsBootstrapOptionsValues options, ConDepSettings conDepSettings)
         {
             _options = options;
+            _conDepSettings = conDepSettings;
             _client = new AmazonEC2Client(_options.Credentials, _options.RegionEndpoint);
 
             _instanceHandler = new Ec2InstanceHandler(_client);
@@ -90,8 +93,11 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
             List<Tuple<string, string>> passwords = null;
 
-            Logger.WithLogSection("Waiting for Windows password to be available",
-                () => { passwords = _passwordHandler.WaitForPassword(instanceIds, _options.PrivateKeyFileLocation); });
+            if (!_conDepSettings.Config.DeploymentUser.IsDefined())
+            {
+                Logger.WithLogSection("Waiting for Windows password to be available",
+                    () => { passwords = _passwordHandler.WaitForPassword(instanceIds, _options.PrivateKeyFileLocation); });
+            }
 
             _instanceHandler.TagInstances(instanceIds, _options.Tags);
 
@@ -103,8 +109,8 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 config.Instances.Add(new Ec2Instance
                 {
                     InstanceId = instance.InstanceId,
-                    UserName = @".\Administrator",
-                    Password = passwords.Single(x => x.Item1 == instance.InstanceId).Item2,
+                    UserName = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.UserName :  @".\Administrator",
+                    Password = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.Password : passwords.Single(x => x.Item1 == instance.InstanceId).Item2,
                     ManagementAddress = GetManagementAddress(_options, instance)
                 });
             }
@@ -140,16 +146,22 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 _instanceHandler.GetInstances(_options.InstanceRequest.ClientToken).ToList() : 
                 _instanceHandler.GetInstances(_options.IdempotencyTags).ToList();
 
-            var existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId),
-                _options.PrivateKeyFileLocation);
+            List<Tuple<string, string>> existingPasswords = null;
+
+            if (!_conDepSettings.Config.DeploymentUser.IsDefined())
+            {
+                existingPasswords = _passwordHandler.WaitForPassword(existingInstances.Select(x => x.InstanceId),
+                    _options.PrivateKeyFileLocation);
+            }
+
 
             foreach (var instance in existingInstances.Where(x => x.State.Name == "Running"))
             {
                 config.Instances.Add(new Ec2Instance
                 {
                     InstanceId = instance.InstanceId,
-                    UserName = ".\\Administrator",
-                    Password = existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
+                    UserName = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.UserName : ".\\Administrator",
+                    Password = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.Password : existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
                     AwsInstance = instance,
                     ManagementAddress = GetManagementAddress(_options, instance)
                 });

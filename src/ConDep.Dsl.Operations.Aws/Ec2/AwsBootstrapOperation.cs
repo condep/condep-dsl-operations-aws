@@ -29,9 +29,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
         public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
         {
             LoadOptionsFromConfig(settings);
-            ValidateMandatoryOptions(_options);
+            ValidateMandatoryOptions(_options, settings);
 
-            var bootstrapper = new Ec2Bootstrapper(_options);
+            var bootstrapper = new Ec2Bootstrapper(_options, settings);
             var ec2Config = bootstrapper.Boostrap();
 
             foreach (var instance in ec2Config.Instances)
@@ -57,11 +57,15 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
         }
 
-        private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options)
+        private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options, ConDepSettings conDepSettings)
         {
+            Debugger.Launch();
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId) && !PrimaryNetworkInterfaceDefined(options)) throw new OperationConfigException(string.Format("Missing value for SubnetId. Please specify in code (using SubnetId or specify in NetworkInterface) or in config."));
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.KeyName)) throw new OperationConfigException(string.Format("Missing value for PublicKeyName. Please specify in code or in config."));
-            if (string.IsNullOrWhiteSpace(options.PrivateKeyFileLocation)) throw new OperationConfigException(string.Format("Missing value for PrivateKeyFileLocation. Please specify in code or in config."));
+            if (!conDepSettings.Config.DeploymentUser.IsDefined())
+            {
+                if (string.IsNullOrWhiteSpace(options.PrivateKeyFileLocation)) throw new OperationConfigException(string.Format("Missing value for PrivateKeyFileLocation. Please specify in code or in config."));
+            }
 
             if (options.RegionEndpoint == null) throw new OperationConfigException(string.Format("Missing value for Region. Please specify in code or in config."));
             if (options.Credentials == null) throw new OperationConfigException(string.Format("Missing value for Credentials. Please specify in code or in config."));
@@ -83,7 +87,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
 
         private void LoadOptionsFromConfig(ConDepSettings settings)
         {
-            if (settings.Config.OperationsConfig == null || (settings.Config.OperationsConfig.AwsBootstrapOperation == null && settings.Config.OperationsConfig.AwsBootstrapOperation == null))
+            if (settings.Config.OperationsConfig == null || (settings.Config.OperationsConfig.AwsBootstrapOperation == null && settings.Config.OperationsConfig.AwsBootstrapOperation == null && settings.Config.OperationsConfig.Aws == null))
             {
                 return;
             }

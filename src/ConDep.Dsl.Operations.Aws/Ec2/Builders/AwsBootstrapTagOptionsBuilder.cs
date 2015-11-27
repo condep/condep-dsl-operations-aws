@@ -5,7 +5,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {
     internal class AwsBootstrapTagOptionsBuilder : IOfferAwsTagOptions
     {
-        private readonly List<KeyValuePair<string, string>> _tags;
+        private readonly List<KeyValuePair<string, string>> _tags = new List<KeyValuePair<string, string>>();
+
+        public AwsBootstrapTagOptionsBuilder()
+        {
+            
+        }
 
         public AwsBootstrapTagOptionsBuilder(List<KeyValuePair<string, string>> tags)
         {
