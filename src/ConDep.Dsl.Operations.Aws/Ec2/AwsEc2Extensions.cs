@@ -173,49 +173,49 @@ namespace ConDep.Dsl
             return ec2Builder.AwsOperations;
         }
 
-        public static IOfferAwsOperations StopInstances(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations StopInstances(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations StartInstances(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations StartInstances(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations CreateImage(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations CreateImage(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations DeleteImage(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations DeleteImage(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations CreateKeyPair(this IOfferAwsEc2Operations ec2, string name)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations CreateKeyPair(this IOfferAwsEc2Operations ec2, string name)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations ImportKeyPair(this IOfferAwsEc2Operations ec2, string name, string publicKey)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations ImportKeyPair(this IOfferAwsEc2Operations ec2, string name, string publicKey)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations DeleteKeyPair(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations DeleteKeyPair(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations CreateSnapshot(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations CreateSnapshot(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        public static IOfferAwsOperations DeleteSnapshot(this IOfferAwsEc2Operations ec2)
-        {
-            throw new NotImplementedException();
-        }
+        //public static IOfferAwsOperations DeleteSnapshot(this IOfferAwsEc2Operations ec2)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }
