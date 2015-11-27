@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Amazon.EC2.Model;
 using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.Ec2;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
-using ConDep.Dsl.Operations.Aws.Terminate;
-using ConDep.Dsl.Terminate;
+using ConDep.Dsl.Operations.Aws.Ec2.Terminate;
 
 namespace ConDep.Dsl
 {
@@ -129,13 +127,23 @@ namespace ConDep.Dsl
             return ec2Builder.AwsOperations;
         }
 
-        public static IOfferAwsOperations TerminateInstances(this IOfferAwsEc2Operations ec2)
+        /// <summary>
+        /// Terminates the instances that are bootstrapped with the given bootstrap-ID.
+        /// </summary>
+        /// <param name="ec2"></param>
+        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
+        /// In AWS this is refered to as the Client Token.</param>
+        /// <returns></returns>
+        public static IOfferAwsOperations TerminateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
-            //var op = new AwsTerminateOperation(mandatoryInputValues);
-            //var local = ((AwsTerminateOperations)terminate).LocalOperations;
-            //Configure.Operation(local, op);
-            //return local;
-            throw new NotImplementedException();
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
+
+            var options = new AwsTerminateOptionsValues(bootstrapId);
+            var awsTerminateOperation = new AwsTerminateOperation(options);
+
+            Configure.Operation(awsOpsBuilder.LocalOperations, awsTerminateOperation);
+            return ec2Builder.AwsOperations;
         }
 
         /// <summary>

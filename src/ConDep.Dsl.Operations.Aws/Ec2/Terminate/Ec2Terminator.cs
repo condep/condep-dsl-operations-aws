@@ -1,17 +1,16 @@
-﻿using Amazon.EC2;
-using ConDep.Dsl.Operations.Aws.Ec2.Builders;
+using Amazon.EC2;
 using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
 
-namespace ConDep.Dsl.Operations.Aws.Terminate
+namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
 {
-    internal class Ec2Terminator
+    public class Ec2Terminator
     {
-        private readonly AwsBootstrapOptionsValues _options;
+        private readonly AwsTerminateOptionsValues _options;
         private readonly IAmazonEC2 _client;
-        private Ec2InstanceHandler _instanceHandler;
+        private readonly Ec2InstanceHandler _instanceHandler;
 
-        public Ec2Terminator(AwsBootstrapOptionsValues options)
+        public Ec2Terminator(AwsTerminateOptionsValues options)
         {
             _options = options;
             var config = new AmazonEC2Config { RegionEndpoint = _options.RegionEndpoint };
@@ -21,7 +20,8 @@ namespace ConDep.Dsl.Operations.Aws.Terminate
 
         public void Terminate()
         {
-            _instanceHandler.Terminate(_options.InstanceRequest.ClientToken);
+            var bootstrapId = _options.InstanceRequest.ClientToken;
+            _instanceHandler.Terminate(bootstrapId);
         }
     }
 }
