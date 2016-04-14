@@ -18,7 +18,7 @@ namespace ConDep.Dsl.Operations.Aws.S3
             _bucket = bucket;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
             var client = new Amazon.S3.AmazonS3Client(GetAwsCredentials(dynamicAwsConfig), RegionEndpoint.GetBySystemName((string)dynamicAwsConfig.Region));
@@ -31,20 +31,16 @@ namespace ConDep.Dsl.Operations.Aws.S3
             if (listBucketsResponse.Buckets.Any(x => x.BucketName.Equals(_bucket)))
             {
                 Logger.Info("Bucket {0} allready exists in Amazon S3", _bucket);
-                return;
+                return Result.SuccessUnChanged();
             }
 
             Logger.Verbose("Bucket does not exist, creating now");
             client.PutBucket(_bucket);
             Logger.Info("Bucket {0} created in Amazon S3", _bucket);
+            return Result.SuccessChanged();
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name { get { return "Create S3 Bucket - " + _bucket; } }
+        public override string Name => $"Create S3 Bucket - {_bucket}";
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

@@ -1,30 +1,38 @@
+using System.Threading;
+using ConDep.Dsl.Builders;
+using ConDep.Dsl.Config;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Elb;
 
 namespace ConDep.Dsl.Operations.Aws
 {
-    internal class AwsOperationsBuilder : IOfferAwsOperations
+    internal class AwsOperationsBuilder : LocalBuilder, IOfferAwsOperations
     {
-        private readonly IOfferLocalOperations _localOps;
-        private readonly IOfferAwsEc2Operations _ec2;
-        private readonly IOfferAwsVpcOperations _vpc;
-        private readonly IOfferAwsElbOperations _elb;
-        private readonly IOfferAwsS3Operations _s3;
-        
-
-        public AwsOperationsBuilder(IOfferLocalOperations localOps)
+        public AwsOperationsBuilder(IOfferLocalOperations localOps, ConDepSettings settings, CancellationToken token) : base(settings, token)
         {
-            _localOps = localOps;
-            _ec2 = new AwsEc2OperationsBuilder(this);
-            _elb = new AwsElbOperationsBuilder(this);
-            _s3 = new AwsS3OperationsBuilder(this);
+            LocalOperations = localOps;
+            Ec2 = new AwsEc2OperationsBuilder(this, settings, token);
+            Elb = new AwsElbOperationsBuilder(this, settings, token);
+            S3 = new AwsS3OperationsBuilder(this, settings, token);
         }
 
-        public IOfferAwsEc2Operations Ec2 { get { return _ec2; } }
-        public IOfferAwsVpcOperations Vpc { get { return _vpc; } }
-        public IOfferAwsElbOperations Elb { get { return _elb; } }
-        public IOfferAwsS3Operations S3 { get { return _s3; } }
 
-        public IOfferLocalOperations LocalOperations { get { return _localOps; } }
+        //public AwsOperationsBuilder(IOfferLocalOperations localOps)
+        //{
+        //    _localOps = localOps;
+        //    _ec2 = new AwsEc2OperationsBuilder(this);
+        //    _elb = new AwsElbOperationsBuilder(this);
+        //    _s3 = new AwsS3OperationsBuilder(this);
+        //}
+
+        public IOfferAwsEc2Operations Ec2 { get; }
+
+        public IOfferAwsElbOperations Elb { get; }
+
+        public IOfferAwsS3Operations S3 { get; }
+
+        public IOfferLocalOperations LocalOperations { get; }
+
+        public override IOfferLocalOperations Dsl => ((LocalOperationsBuilder) LocalOperations).Dsl;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Amazon.S3.Model;
+using ConDep.Dsl.Builders;
 using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.S3;
 
@@ -22,13 +23,12 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations Upload(this IOfferAwsS3Operations s3, string srcFile, string targetBucket, Action<IOfferAwsS3UploadOptions> options = null)
         {
             var s3Builder = s3 as AwsS3OperationsBuilder;
-            var awsOpsBuilder = s3Builder.AwsOperations as AwsOperationsBuilder;
 
             var opt = new AwsS3UploadOptionsBuilder();
             if (options != null) options(opt);
 
             var operation = new AwsS3UploadOperation(srcFile, targetBucket, opt);
-            Configure.Operation(awsOpsBuilder.LocalOperations, operation);
+            OperationExecutor.Execute((LocalBuilder)s3, operation);
             return s3Builder.AwsOperations;
         }
 
@@ -43,10 +43,9 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations Download(this IOfferAwsS3Operations s3, string bucket, string key, string dstFile)
         {
             var s3Builder = s3 as AwsS3OperationsBuilder;
-            var awsOpsBuilder = s3Builder.AwsOperations as AwsOperationsBuilder;
 
             var operation = new AwsS3DownloadOperation(bucket, key, dstFile);
-            Configure.Operation(awsOpsBuilder.LocalOperations, operation);
+            OperationExecutor.Execute((LocalBuilder)s3, operation);
             return s3Builder.AwsOperations;
         }
 
@@ -59,10 +58,9 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations CreateBucket(this IOfferAwsS3Operations s3, string bucket)
         {
             var s3Builder = s3 as AwsS3OperationsBuilder;
-            var awsOpsBuilder = s3Builder.AwsOperations as AwsOperationsBuilder;
 
             var operation = new AwsS3CreateBucketOperation(bucket);
-            Configure.Operation(awsOpsBuilder.LocalOperations, operation);
+            OperationExecutor.Execute((LocalBuilder)s3, operation);
             return s3Builder.AwsOperations;
         }
 
@@ -75,10 +73,9 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations DeleteBucket(this IOfferAwsS3Operations s3, string bucket)
         {
             var s3Builder = s3 as AwsS3OperationsBuilder;
-            var awsOpsBuilder = s3Builder.AwsOperations as AwsOperationsBuilder;
 
             var operation = new AwsS3DeleteBucketOperation(bucket);
-            Configure.Operation(awsOpsBuilder.LocalOperations, operation);
+            OperationExecutor.Execute((LocalBuilder)s3, operation);
             return s3Builder.AwsOperations;
         }
 
@@ -92,10 +89,9 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations DeleteObject(this IOfferAwsS3Operations s3, string bucket, string key)
         {
             var s3Builder = s3 as AwsS3OperationsBuilder;
-            var awsOpsBuilder = s3Builder.AwsOperations as AwsOperationsBuilder;
 
             var operation = new AwsS3DeleteObjectOperation(bucket, key);
-            Configure.Operation(awsOpsBuilder.LocalOperations, operation);
+            OperationExecutor.Execute((LocalBuilder)s3, operation);
             return s3Builder.AwsOperations;
         }
     }

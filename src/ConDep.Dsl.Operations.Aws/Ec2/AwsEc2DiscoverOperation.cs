@@ -27,31 +27,40 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             _awsOptions = awsOptions;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var client = GetAwsClient(settings, _awsOptions);
 
-            Debugger.Launch();
             var searchFilter = GetSearchFilters(_tags).ToList();
             var request = new DescribeInstancesRequest {Filters = searchFilter};
-            var result = client.DescribeInstances(request);
+            var response = client.DescribeInstances(request);
 
-            foreach (var reservation in result.Reservations)
+            var resultInstances = new List<dynamic>();
+            foreach (var reservation in response.Reservations)
             {
                 foreach (var instance in reservation.Instances.Where(x => x.State.Name == "Running"))
                 {
-                    settings.Config.AddServer(GetManagementAddress(_awsOptions.RemoteManagementAddressType, instance));
+                    var serverAddress = GetManagementAddress(_awsOptions.RemoteManagementAddressType, instance);
+                    resultInstances.Add(new
+                    {
+                        Server = serverAddress
+                    });
+                    settings.Config.AddServer(serverAddress);
                 }
             }
 
             var serverInfoHarvester = HarvesterFactory.GetHarvester(settings);
             var serverValidator = new RemoteServerValidator(settings.Config.Servers, serverInfoHarvester, new PowerShellExecutor());
-            if (!serverValidator.IsValid())
+            if (!serverValidator.Validate())
             {
                 throw new ConDepValidationException("Not all servers fulfill ConDep's requirements. Aborting execution.");
             }
 
-            ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
+            ConDepConfigurationExecutor.ExecutePreOps(settings, token);
+            var result = Result.SuccessUnChanged();
+            result.Data.Instances = resultInstances;
+            result.Data.HttpStatusCode = response.HttpStatusCode;
+            return result;
         }
 
         private IEnumerable<Filter> GetSearchFilters(List<KeyValuePair<string, string>> tags)
@@ -80,10 +89,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 }
             }
 
-            throw new OperationConfigException(
-                string.Format(
-                    "AWS Region must be provided either through DSL or in configuration for operation {0}.",
-                    GetType().Name));
+            throw new OperationConfigException($"AWS Region must be provided either through DSL or in configuration for operation {GetType().Name}.");
         }
 
         private AWSCredentials GetAwsCredentials(ConDepSettings settings, AwsEc2DiscoverOptionsValues awsOptions)
@@ -97,15 +103,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 if (string.IsNullOrEmpty(profileName))
                 {
                     if (dynamicAwsConfig.Credentials.AccessKey == null)
-                        throw new OperationConfigException(
-                            string.Format(
-                                "Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                GetType().Name));
+                        throw new OperationConfigException($"Configuration in environment configuration file for Credentials.AccessKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
                     if (dynamicAwsConfig.Credentials.SecretKey == null)
-                        throw new OperationConfigException(
-                            string.Format(
-                                "Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                GetType().Name));
+                        throw new OperationConfigException($"Configuration in environment configuration file for Credentials.SecretKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
 
                     return new BasicAWSCredentials((string)dynamicAwsConfig.Credentials.AccessKey, (string)dynamicAwsConfig.Credentials.SecretKey);
                 }
@@ -113,10 +113,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 return new StoredProfileAWSCredentials((string)dynamicAwsConfig.Credentials.ProfileName);
             }
 
-            throw new OperationConfigException(
-                string.Format(
-                    "AWS Credentials must be provided either through DSL or in configuration for operation {0}.",
-                    GetType().Name));
+            throw new OperationConfigException($"AWS Credentials must be provided either through DSL or in configuration for operation {GetType().Name}.");
         }
 
         private string GetManagementAddress(RemoteManagementAddressType? managementAddressType, Instance instance)
@@ -162,11 +159,6 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             throw new Exception("No remote management address found.");
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name { get { return "Discover Amazon Ec2 Instances"; } }
+        public override string Name => "Discover Amazon Ec2 Instances";
     }
 }

@@ -21,7 +21,7 @@ namespace ConDep.Dsl.Operations.Aws.S3
             _options = options;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
             var fileName = Path.GetFileName(_srcFile);
@@ -38,17 +38,21 @@ namespace ConDep.Dsl.Operations.Aws.S3
             };
 
             var response = client.PutObject(objRequest);
+            return Result(response);
         }
 
-        public override bool IsValid(Notification notification)
+        private static Result Result(PutObjectResponse response)
         {
-            return true;
+            var result = Dsl.Result.SuccessChanged();
+            result.Data.HttpStatusCode = response.HttpStatusCode;
+            result.Data.Expiration = response.Expiration;
+            result.Data.ServerSideEncryptionKeyManagementServiceKeyId = response.ServerSideEncryptionKeyManagementServiceKeyId;
+            result.Data.ServerSideEncryptionMethod = response.ServerSideEncryptionMethod;
+            result.Data.VersionId = response.VersionId;
+            return result;
         }
 
-        public override string Name
-        {
-            get { return "Aws S3 Upload"; }
-        }
+        public override string Name => "Aws S3 Upload";
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using ConDep.Dsl.Builders;
 using ConDep.Dsl.Operations.Aws;
 
 namespace ConDep.Dsl
@@ -16,7 +17,8 @@ namespace ConDep.Dsl
         /// <returns></returns>
         public static IOfferLocalOperations Aws(this IOfferLocalOperations local, Action<IOfferAwsOperations> aws)
         {
-            var opsBuilder = new AwsOperationsBuilder(local);
+            var builder = local as LocalOperationsBuilder;
+            var opsBuilder = new AwsOperationsBuilder(local, builder.Settings, builder.Token);
 
             if (aws != null)
             {

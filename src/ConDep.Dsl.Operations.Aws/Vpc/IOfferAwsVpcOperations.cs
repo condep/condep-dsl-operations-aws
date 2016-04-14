@@ -1,14 +1,24 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using Amazon.EC2;
 using Amazon.EC2.Model;
+using ConDep.Dsl.Builders;
 using ConDep.Dsl.Config;
-using ConDep.Dsl.Validation;
 
 namespace ConDep.Dsl
 {
     public interface IOfferAwsVpcOperations
     {
+    }
+
+    public class AwsVpcOperationsBuilder : LocalBuilder, IOfferAwsVpcOperations
+    {
+        public AwsVpcOperationsBuilder(IOfferAwsOperations awsOps, ConDepSettings settings, CancellationToken token) : base(settings, token)
+        {
+        }
+
+        public override IOfferLocalOperations Dsl { get; }
     }
 
     public static class VpcExtensions
@@ -33,7 +43,7 @@ namespace ConDep.Dsl
     {
     }
 
-    public class VpcCreateSecurityGroupOperation : LocalOperation
+    internal class VpcCreateSecurityGroupOperation : LocalOperation
     {
         private readonly string _description;
         private readonly string _groupName;
@@ -46,7 +56,7 @@ namespace ConDep.Dsl
             _vpcId = vpcId;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var client = new AmazonEC2Client();
             var request = new CreateSecurityGroupRequest
@@ -56,20 +66,13 @@ namespace ConDep.Dsl
                 VpcId = _vpcId
             };
 
-            client.CreateSecurityGroup(request);
+            var response = client.CreateSecurityGroup(request);
+            var result = response.HttpStatusCode == HttpStatusCode.Created ? Result.SuccessChanged() : Result.SuccessUnChanged();
+            result.Data.HttpStatusCode = response.HttpStatusCode;
+            result.Data.GroupId = response.GroupId;
+            return result;
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name
-        {
-            get
-            {
-                return "Create Security Group";
-            }
-        }
+        public override string Name => "Create Security Group";
     }
 }

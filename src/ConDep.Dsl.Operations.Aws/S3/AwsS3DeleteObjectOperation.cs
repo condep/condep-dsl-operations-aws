@@ -5,7 +5,6 @@ using Amazon;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Logging;
-using ConDep.Dsl.Validation;
 
 namespace ConDep.Dsl.Operations.Aws.S3
 {
@@ -20,7 +19,7 @@ namespace ConDep.Dsl.Operations.Aws.S3
             _key = key;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
 
@@ -34,7 +33,7 @@ namespace ConDep.Dsl.Operations.Aws.S3
                     {
                         Logger.Verbose("Failed to get Amazon S3 Object metadata. Http status code was {0}", obj.HttpStatusCode);
                         Logger.Info("Could not find Amazon S3 Object {0} in bucket {1}- assuming allready deleted.", _key, _bucket);
-                        return;
+                        return Result.SuccessUnChanged();
                     }
                 }
                 catch (Exception ex)
@@ -42,20 +41,17 @@ namespace ConDep.Dsl.Operations.Aws.S3
                     Logger.Verbose("Failed to get Amazon S3 Object metadata. Exception was:");
                     Logger.Verbose(ex.Message);
                     Logger.Warn("Exception during Amazon S3 Object lookup. Assuming object allready deleted.");
+                    return Result.Failed();
                 }
 
                 Logger.Info("Deleting Amazon S3 Object with key {0} in Bucket {1}", _key, _bucket);
                 client.DeleteObject(_bucket, _key);
+                return Result.SuccessChanged();
             }
 
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name { get { return "Delete S3 Object"; } }
+        public override string Name => "Delete S3 Object";
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

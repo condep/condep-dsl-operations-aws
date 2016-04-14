@@ -25,7 +25,7 @@ namespace ConDep.Dsl.Operations.Aws.Elb
             _config = config;
         }
 
-        public void BringOffline(string serverName, string farm, LoadBalancerSuspendMethod suspendMethod, IReportStatus status)
+        public Result BringOffline(string serverName, string farm, LoadBalancerSuspendMethod suspendMethod)
         {
             var credentials = GetCredentials(_config.CustomConfig);
             var endpoint = GetEndpoint(_config.CustomConfig);
@@ -35,9 +35,13 @@ namespace ConDep.Dsl.Operations.Aws.Elb
 
             var request = new DeregisterInstancesFromLoadBalancerRequest(farm, new List<Instance> { new Instance(GetInstanceId(ec2Client, serverName)) });
             var response = client.DeregisterInstancesFromLoadBalancer(request);
+            var result = Result.SuccessChanged();
+            result.Data.HttpStatusCode = response.HttpStatusCode;
+            result.Data.ActiveInstances = response.Instances;
+            return result;
         }
 
-        public void BringOnline(string serverName, string farm, IReportStatus status)
+        public Result BringOnline(string serverName, string farm)
         {
             var credentials = GetCredentials(_config.CustomConfig);
             var endpoint = GetEndpoint(_config.CustomConfig);
@@ -47,6 +51,10 @@ namespace ConDep.Dsl.Operations.Aws.Elb
 
             var request = new RegisterInstancesWithLoadBalancerRequest(farm, new List<Instance> { new Instance(GetInstanceId(ec2Client, serverName)) });
             var response = client.RegisterInstancesWithLoadBalancer(request);
+            var result = Result.SuccessChanged();
+            result.Data.HttpStatusCode = response.HttpStatusCode;
+            result.Data.ActiveInstances = response.Instances;
+            return result;
         }
 
         public string GetInstanceId(AmazonEC2Client client, string serverName)
@@ -109,6 +117,6 @@ namespace ConDep.Dsl.Operations.Aws.Elb
             }
         }
 
-        public LbMode Mode { get; set; }
+        public LoadBalancerMode Mode { get; set; }
     }
 }

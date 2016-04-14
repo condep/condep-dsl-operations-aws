@@ -6,7 +6,6 @@ using Amazon.Runtime;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Harvesters;
 using ConDep.Dsl.Logging;
-using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using ConDep.Dsl.Remote;
@@ -26,7 +25,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             _options = options;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             LoadOptionsFromConfig(settings);
             ValidateMandatoryOptions(_options, settings);
@@ -45,17 +44,19 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                     },
                     Name = instance.ManagementAddress,
                     PowerShell = new PowerShellConfig() { HttpPort = 5985, HttpsPort = 5986 },
-                    Node = new NodeConfig() { Port = 4444, TimeoutInSeconds = 100}
+                    Node = new NodeConfig() { Port = 4444, TimeoutInSeconds = 100 }
                 });
             }
 
             var serverValidator = new RemoteServerValidator(settings.Config.Servers, HarvesterFactory.GetHarvester(settings), new PowerShellExecutor());
-            if (!serverValidator.IsValid())
+            if (!serverValidator.Validate())
             {
                 throw new ConDepValidationException("Not all servers fulfill ConDep's requirements. Aborting execution.");
             }
-            ConDepConfigurationExecutor.ExecutePreOps(settings, status, token);
+            ConDepConfigurationExecutor.ExecutePreOps(settings, token);
+            return Result.SuccessChanged();
         }
+
 
         private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options, ConDepSettings conDepSettings)
         {
@@ -111,15 +112,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                         if (string.IsNullOrEmpty(profileName))
                         {
                             if (dynamicAwsConfig.Credentials.AccessKey == null)
-                                throw new OperationConfigException(
-                                    string.Format(
-                                        "Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                        GetType().Name));
+                                throw new OperationConfigException($"Configuration in environment configuration file for Credentials.AccessKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
                             if (dynamicAwsConfig.Credentials.SecretKey == null)
-                                throw new OperationConfigException(
-                                    string.Format(
-                                        "Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.",
-                                        GetType().Name));
+                                throw new OperationConfigException($"Configuration in environment configuration file for Credentials.SecretKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
 
                             _options.Credentials = new BasicAWSCredentials((string)dynamicAwsConfig.Credentials.AccessKey, (string)dynamicAwsConfig.Credentials.SecretKey);
                         }
@@ -137,20 +132,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             }
             catch (RuntimeBinderException binderException)
             {
-                throw new OperationConfigException(
-                    string.Format("Configuration extraction for {0} failed during binding. Please check inner exception for details.",
-                        GetType().Name), binderException);
+                throw new OperationConfigException($"Configuration extraction for {GetType().Name} failed during binding. Please check inner exception for details.", binderException);
             }
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name
-        {
-            get { return "AWS Bootstrap"; }
-        }
+        public override string Name => "AWS Bootstrap";
     }
 }

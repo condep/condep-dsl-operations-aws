@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ConDep.Dsl.Builders;
 using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.Ec2;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
@@ -51,12 +52,11 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var options = new AwsBootstrapOptionsValues(bootstrapId);
             var awsBootstrapOperation = new AwsBootstrapOperation(options);
 
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
@@ -73,12 +73,11 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags)
         {            
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var instanceOptions = new AwsBootstrapOptionsBuilder(tags);
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
 
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
@@ -94,13 +93,13 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId, Action<IOfferAwsBootstrapOptions> options)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var instanceOptions = new AwsBootstrapOptionsBuilder(bootstrapId);
             options(instanceOptions);
 
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
+
+            OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
@@ -117,13 +116,12 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsBootstrapOptions> options)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var instanceOptions = new AwsBootstrapOptionsBuilder(tags);
             options(instanceOptions);
 
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsBootstrapOperation);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
             return ec2Builder.AwsOperations;
         }
 
@@ -137,12 +135,11 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations TerminateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var options = new AwsTerminateOptionsValues(bootstrapId);
             var awsTerminateOperation = new AwsTerminateOperation(options);
 
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsTerminateOperation);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsTerminateOperation);
             return ec2Builder.AwsOperations;
         }
 
@@ -155,7 +152,6 @@ namespace ConDep.Dsl
         public static IOfferAwsOperations DiscoverInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsEc2DiscoverOptions> options = null)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
-            var awsOpsBuilder = ec2Builder.AwsOperations as AwsOperationsBuilder;
 
             var tagValues = new List<KeyValuePair<string, string>>();
             var tagOptions = new AwsBootstrapTagOptionsBuilder(tagValues);
@@ -167,9 +163,8 @@ namespace ConDep.Dsl
                 options(awsOptions);
             }
 
-
             var awsEc2DiscoverOperation = new AwsEc2DiscoverOperation(tagValues, awsOptions.Values);
-            Configure.Operation(awsOpsBuilder.LocalOperations, awsEc2DiscoverOperation);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsEc2DiscoverOperation);
             return ec2Builder.AwsOperations;
         }
 

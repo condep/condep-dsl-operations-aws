@@ -17,7 +17,7 @@ namespace ConDep.Dsl.Operations.Aws.S3
             _bucket = bucket;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
             var client = new Amazon.S3.AmazonS3Client(GetAwsCredentials(dynamicAwsConfig), RegionEndpoint.GetBySystemName((string)dynamicAwsConfig.Region));
@@ -30,20 +30,16 @@ namespace ConDep.Dsl.Operations.Aws.S3
             if (!listBucketsResponse.Buckets.Any(x => x.BucketName.Equals(_bucket)))
             {
                 Logger.Info("Bucket {0} is allready removed from Amazon S3", _bucket);
-                return;
+                return Result.SuccessUnChanged();
             }
 
             Logger.Verbose("Bucket {0} found in S3", _bucket);
             Logger.Info("Deleting bucket {0} from Amazon S3", _bucket);
             client.DeleteBucket(_bucket);
+            return Result.SuccessChanged();
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name { get { return "Delete S3 Bucket"; } }
+        public override string Name => "Delete S3 Bucket";
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

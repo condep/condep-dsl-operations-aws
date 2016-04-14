@@ -3,12 +3,11 @@ using Amazon;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
-using ConDep.Dsl.Validation;
 using Microsoft.CSharp.RuntimeBinder;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
 {
-    public class AwsTerminateOperation : LocalOperation
+    internal class AwsTerminateOperation : LocalOperation
     {
         private readonly AwsTerminateOptionsValues _options;
 
@@ -17,12 +16,13 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
             _options = options;
         }
 
-        public override void Execute(IReportStatus status, ConDepSettings settings, CancellationToken token)
+        public override Result Execute(ConDepSettings settings, CancellationToken token)
         {
             LoadOptionsFromConfig(settings);
             ValidateMandatoryOptions(_options);
             var terminator = new Ec2Terminator(_options);
             terminator.Terminate();
+            return Result.SuccessChanged();
         }
 
         private void LoadOptionsFromConfig(ConDepSettings settings)
@@ -88,14 +88,6 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
             if (options.Credentials == null) throw new OperationConfigException(string.Format("Missing value for Credentials. Please specify in code or in config."));
         }
 
-        public override bool IsValid(Notification notification)
-        {
-            return true;
-        }
-
-        public override string Name
-        {
-            get { return "Aws Terminate Instance"; }
-        }
+        public override string Name => "Aws Terminate Instance";
     }
 }

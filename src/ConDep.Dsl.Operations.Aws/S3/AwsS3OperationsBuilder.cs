@@ -1,17 +1,19 @@
-﻿namespace ConDep.Dsl
+﻿using System.Threading;
+using ConDep.Dsl.Builders;
+using ConDep.Dsl.Config;
+using ConDep.Dsl.Operations.Aws;
+
+namespace ConDep.Dsl
 {
-    public class AwsS3OperationsBuilder : IOfferAwsS3Operations
+    internal class AwsS3OperationsBuilder : LocalBuilder, IOfferAwsS3Operations
     {
-        private readonly IOfferAwsOperations _awsOps;
-
-        public AwsS3OperationsBuilder(IOfferAwsOperations awsOps)
+        public AwsS3OperationsBuilder(IOfferAwsOperations awsOps, ConDepSettings settings, CancellationToken token) : base(settings, token)
         {
-            _awsOps = awsOps;
+            AwsOperations = awsOps;
         }
 
-        public IOfferAwsOperations AwsOperations
-        {
-            get { return _awsOps; }
-        }
+        public IOfferAwsOperations AwsOperations { get; }
+
+        public override IOfferLocalOperations Dsl => ((AwsOperationsBuilder) AwsOperations).Dsl;
     }
 }
