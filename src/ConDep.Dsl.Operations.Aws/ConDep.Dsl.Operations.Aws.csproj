@@ -39,17 +39,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.2.3.50.1\lib\net35\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Dsl, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\condep-dsl\src\ConDep.Dsl\bin\Debug\ConDep.Dsl.dll</HintPath>
+    <Reference Include="ConDep.Dsl">
+      <HintPath>..\packages\ConDep.Dsl.5.0.0-beta93\lib\net40\ConDep.Dsl.dll</HintPath>
     </Reference>
     <Reference Include="ConDep.Dsl.Operations, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\condep-dsl-operations\src\ConDep.Dsl.Operations\bin\Debug\ConDep.Dsl.Operations.dll</HintPath>
     </Reference>
-    <Reference Include="ConDep.Execution, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\condep-execution\src\ConDep.Execution\bin\Debug\ConDep.Execution.dll</HintPath>
+    <Reference Include="ConDep.Execution">
+      <HintPath>..\packages\ConDep.Execution.5.0.0-beta6\lib\net40\ConDep.Execution.dll</HintPath>
     </Reference>
     <Reference Include="Ionic.Zip, Version=1.9.6.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.9.6\lib\net20\Ionic.Zip.dll</HintPath>
