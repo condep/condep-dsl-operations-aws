@@ -53,6 +53,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             {
                 throw new ConDepValidationException("Not all servers fulfill ConDep's requirements. Aborting execution.");
             }
+
             ConDepConfigurationExecutor.ExecutePreOps(settings, token);
             return Result.SuccessChanged();
         }
