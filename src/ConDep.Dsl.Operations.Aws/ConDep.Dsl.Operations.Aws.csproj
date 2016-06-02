@@ -48,7 +48,7 @@
       <HintPath>..\..\..\condep-dsl-operations\src\ConDep.Dsl.Operations\bin\Debug\ConDep.Dsl.Operations.dll</HintPath>
     </Reference>
     <Reference Include="ConDep.Execution, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ConDep.Execution.5.0.0-beta9995\lib\net40\ConDep.Execution.dll</HintPath>
+      <HintPath>..\packages\ConDep.Execution.5.0.0-beta9996\lib\net40\ConDep.Execution.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Ionic.Zip, Version=1.9.6.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
