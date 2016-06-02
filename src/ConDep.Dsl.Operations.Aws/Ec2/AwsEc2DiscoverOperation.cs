@@ -89,7 +89,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 }
             }
 
-            throw new OperationConfigException($"AWS Region must be provided either through DSL or in configuration for operation {GetType().Name}.");
+            throw new OperationConfigException(string.Format("AWS Region must be provided either through DSL or in configuration for operation {0}.", GetType().Name));
         }
 
         private AWSCredentials GetAwsCredentials(ConDepSettings settings, AwsEc2DiscoverOptionsValues awsOptions)
@@ -103,9 +103,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 if (string.IsNullOrEmpty(profileName))
                 {
                     if (dynamicAwsConfig.Credentials.AccessKey == null)
-                        throw new OperationConfigException($"Configuration in environment configuration file for Credentials.AccessKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
+                        throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.", GetType().Name));
                     if (dynamicAwsConfig.Credentials.SecretKey == null)
-                        throw new OperationConfigException($"Configuration in environment configuration file for Credentials.SecretKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
+                        throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.", GetType().Name));
 
                     return new BasicAWSCredentials((string)dynamicAwsConfig.Credentials.AccessKey, (string)dynamicAwsConfig.Credentials.SecretKey);
                 }
@@ -113,7 +113,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                 return new StoredProfileAWSCredentials((string)dynamicAwsConfig.Credentials.ProfileName);
             }
 
-            throw new OperationConfigException($"AWS Credentials must be provided either through DSL or in configuration for operation {GetType().Name}.");
+            throw new OperationConfigException(string.Format("AWS Credentials must be provided either through DSL or in configuration for operation {0}.", GetType().Name));
         }
 
         private string GetManagementAddress(RemoteManagementAddressType? managementAddressType, Instance instance)
@@ -159,6 +159,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             throw new Exception("No remote management address found.");
         }
 
-        public override string Name => "Discover Amazon Ec2 Instances";
+        public override string Name
+        {
+            get { return "Discover Amazon Ec2 Instances"; }
+        }
     }
 }

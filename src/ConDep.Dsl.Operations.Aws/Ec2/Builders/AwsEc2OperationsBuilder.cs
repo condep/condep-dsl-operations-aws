@@ -11,8 +11,11 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
             AwsOperations = awsOps;
         }
 
-        public IOfferAwsOperations AwsOperations { get; }
+        public IOfferAwsOperations AwsOperations { get; private set; }
 
-        public override IOfferLocalOperations Dsl => ((AwsOperationsBuilder) AwsOperations).LocalOperations;
+        public override IOfferLocalOperations Dsl
+        {
+            get { return ((AwsOperationsBuilder) AwsOperations).LocalOperations; }
+        }
     }
 }

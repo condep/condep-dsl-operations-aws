@@ -40,7 +40,10 @@ namespace ConDep.Dsl.Operations.Aws.S3
             return Result.SuccessChanged();
         }
 
-        public override string Name => $"Create S3 Bucket - {_bucket}";
+        public override string Name
+        {
+            get { return string.Format("Create S3 Bucket - {0}", _bucket); }
+        }
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

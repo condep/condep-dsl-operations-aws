@@ -51,7 +51,10 @@ namespace ConDep.Dsl.Operations.Aws.S3
 
         }
 
-        public override string Name => "Delete S3 Object";
+        public override string Name
+        {
+            get { return "Delete S3 Object"; }
+        }
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

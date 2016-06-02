@@ -25,14 +25,17 @@ namespace ConDep.Dsl.Operations.Aws
         //    _s3 = new AwsS3OperationsBuilder(this);
         //}
 
-        public IOfferAwsEc2Operations Ec2 { get; }
+        public IOfferAwsEc2Operations Ec2 { get; private set; }
 
-        public IOfferAwsElbOperations Elb { get; }
+        public IOfferAwsElbOperations Elb { get; private set; }
 
-        public IOfferAwsS3Operations S3 { get; }
+        public IOfferAwsS3Operations S3 { get; private set; }
 
-        public IOfferLocalOperations LocalOperations { get; }
+        public IOfferLocalOperations LocalOperations { get; private set; }
 
-        public override IOfferLocalOperations Dsl => ((LocalOperationsBuilder) LocalOperations).Dsl;
+        public override IOfferLocalOperations Dsl
+        {
+            get { return ((LocalOperationsBuilder) LocalOperations).Dsl; }
+        }
     }
 }

@@ -113,9 +113,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
                         if (string.IsNullOrEmpty(profileName))
                         {
                             if (dynamicAwsConfig.Credentials.AccessKey == null)
-                                throw new OperationConfigException($"Configuration in environment configuration file for Credentials.AccessKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
+                                throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials.AccessKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.", GetType().Name));
                             if (dynamicAwsConfig.Credentials.SecretKey == null)
-                                throw new OperationConfigException($"Configuration in environment configuration file for Credentials.SecretKey must be present for operation {GetType().Name}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.");
+                                throw new OperationConfigException(string.Format("Configuration in environment configuration file for Credentials.SecretKey must be present for operation {0}. Optionally you can use AWS credential profile instead, but then ProfileName must be present.", GetType().Name));
 
                             _options.Credentials = new BasicAWSCredentials((string)dynamicAwsConfig.Credentials.AccessKey, (string)dynamicAwsConfig.Credentials.SecretKey);
                         }
@@ -133,10 +133,13 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             }
             catch (RuntimeBinderException binderException)
             {
-                throw new OperationConfigException($"Configuration extraction for {GetType().Name} failed during binding. Please check inner exception for details.", binderException);
+                throw new OperationConfigException(string.Format("Configuration extraction for {0} failed during binding. Please check inner exception for details.", GetType().Name), binderException);
             }
         }
 
-        public override string Name => "AWS Bootstrap";
+        public override string Name
+        {
+            get { return "AWS Bootstrap"; }
+        }
     }
 }

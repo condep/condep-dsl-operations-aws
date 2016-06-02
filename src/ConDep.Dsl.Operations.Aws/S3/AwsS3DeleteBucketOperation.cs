@@ -39,7 +39,10 @@ namespace ConDep.Dsl.Operations.Aws.S3
             return Result.SuccessChanged();
         }
 
-        public override string Name => "Delete S3 Bucket";
+        public override string Name
+        {
+            get { return "Delete S3 Bucket"; }
+        }
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {

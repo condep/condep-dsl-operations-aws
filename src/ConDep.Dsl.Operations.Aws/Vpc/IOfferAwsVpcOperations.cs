@@ -5,6 +5,7 @@ using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Builders;
 using ConDep.Dsl.Config;
+using ConDep.Dsl.Operations.Aws;
 
 namespace ConDep.Dsl
 {
@@ -14,11 +15,14 @@ namespace ConDep.Dsl
 
     public class AwsVpcOperationsBuilder : LocalBuilder, IOfferAwsVpcOperations
     {
+        private readonly IOfferAwsOperations _awsOps;
+
         public AwsVpcOperationsBuilder(IOfferAwsOperations awsOps, ConDepSettings settings, CancellationToken token) : base(settings, token)
         {
+            _awsOps = awsOps;
         }
 
-        public override IOfferLocalOperations Dsl { get; }
+        public override IOfferLocalOperations Dsl { get { return ((AwsOperationsBuilder) _awsOps).LocalOperations; } }
     }
 
     public static class VpcExtensions
@@ -73,6 +77,9 @@ namespace ConDep.Dsl
             return result;
         }
 
-        public override string Name => "Create Security Group";
+        public override string Name
+        {
+            get { return "Create Security Group"; }
+        }
     }
 }

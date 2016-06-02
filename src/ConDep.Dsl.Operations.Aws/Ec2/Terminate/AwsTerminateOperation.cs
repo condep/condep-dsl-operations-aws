@@ -88,6 +88,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
             if (options.Credentials == null) throw new OperationConfigException(string.Format("Missing value for Credentials. Please specify in code or in config."));
         }
 
-        public override string Name => "Aws Terminate Instance";
+        public override string Name
+        {
+            get { return "Aws Terminate Instance"; }
+        }
     }
 }

@@ -52,7 +52,10 @@ namespace ConDep.Dsl.Operations.Aws.S3
             return result;
         }
 
-        public override string Name => "Aws S3 Upload";
+        public override string Name
+        {
+            get { return "Aws S3 Upload"; }
+        }
 
         private BasicAWSCredentials GetAwsCredentials(dynamic dynamicAwsConfig)
         {
