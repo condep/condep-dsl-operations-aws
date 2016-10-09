@@ -61,7 +61,6 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
 
         private void ValidateMandatoryOptions(AwsBootstrapOptionsValues options, ConDepSettings conDepSettings)
         {
-            Debugger.Launch();
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId) && !PrimaryNetworkInterfaceDefined(options)) throw new OperationConfigException(string.Format("Missing value for SubnetId. Please specify in code (using SubnetId or specify in NetworkInterface) or in config."));
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.KeyName)) throw new OperationConfigException(string.Format("Missing value for PublicKeyName. Please specify in code or in config."));
             if (!conDepSettings.Config.DeploymentUser.IsDefined())
