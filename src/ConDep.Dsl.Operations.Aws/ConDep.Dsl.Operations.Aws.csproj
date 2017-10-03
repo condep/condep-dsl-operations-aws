@@ -91,6 +91,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AwsOperationsBuilder.cs" />
+    <Compile Include="Ec2\Handlers\Ec2Starter.cs" />
+    <Compile Include="Ec2\Model\AwsStartOptionsValues.cs" />
     <Compile Include="Ec2\Builders\AwsImageDeregisterOptionsBuilder.cs" />
     <Compile Include="Ec2\Model\AwsImageDeregisterOptionsValues.cs" />
     <Compile Include="Ec2\IOfferAwsImageDeregisterOptions.cs" />
@@ -123,6 +125,7 @@
     <Compile Include="Ec2\IOfferAwsTagOptions.cs" />
     <Compile Include="Ec2\Model\AwsStopOptionsValues.cs" />
     <Compile Include="Ec2\Model\AwsTerminateOptionsValues.cs" />
+    <Compile Include="Ec2\Operations\AwsStartOperation.cs" />
     <Compile Include="Ec2\Operations\AwsStopOperation.cs" />
     <Compile Include="Ec2\Operations\AwsTerminateOperation.cs" />
     <Compile Include="Ec2\Handlers\Ec2Terminator.cs" />

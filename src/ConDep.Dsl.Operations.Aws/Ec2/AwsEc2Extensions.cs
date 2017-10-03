@@ -185,10 +185,17 @@ namespace ConDep.Dsl
             return ec2Builder.Result;
         }
 
-        //public static IOfferAwsOperations StartInstances(this IOfferAwsEc2Operations ec2)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public static Result StartInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
+        {
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+
+            var options = new AwsStartOptionsValues(bootstrapId);
+            var awsStartOperation = new AwsStartOperation(options);
+
+            OperationExecutor.Execute((LocalBuilder)ec2, awsStartOperation);
+
+            return ec2Builder.Result;
+        }
 
         public static Result CreateImage(this IOfferAwsEc2Operations ec2, string instanceId, string imageName, Action<IOfferAwsImageCreateOptions> options = null)
         {
