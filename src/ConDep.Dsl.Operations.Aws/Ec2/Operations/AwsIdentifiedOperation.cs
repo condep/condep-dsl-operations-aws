@@ -1,45 +1,32 @@
-using System.Threading;
-using Amazon;
+﻿using Amazon;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
-using ConDep.Dsl.Operations.Aws.Ec2.Model;
 using Microsoft.CSharp.RuntimeBinder;
 
-namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
+namespace ConDep.Dsl.Operations.Aws.Ec2.Operations
 {
-    internal class AwsTerminateOperation : LocalOperation
+    public abstract class AwsIdentifiedOperation : LocalOperation
     {
-        private readonly AwsTerminateOptionsValues _options;
 
-        public AwsTerminateOperation(AwsTerminateOptionsValues options)
+        private IOfferAwsOperationsOptionValues _options;
+        public AwsIdentifiedOperation(IOfferAwsOperationsOptionValues options)
         {
-            _options = options;
+            this._options = options;
         }
 
-        public override Result Execute(ConDepSettings settings, CancellationToken token)
-        {
-            LoadOptionsFromConfig(settings);
-            ValidateMandatoryOptions(_options);
-            var terminator = new Ec2Terminator(_options);
-            terminator.Terminate();
-            return Result.SuccessChanged();
-        }
-
-        private void LoadOptionsFromConfig(ConDepSettings settings)
+        public void LoadOptionsFromConfig(ConDepSettings settings)
         {
             if (settings.Config.OperationsConfig == null || (settings.Config.OperationsConfig.AwsBootstrapOperation == null && settings.Config.OperationsConfig.AwsBootstrapOperation == null))
             {
                 return;
             }
-
-            var dynamicBootstrapConfig = settings.Config.OperationsConfig.AwsBootstrapOperation;
+            
             var dynamicAwsConfig = settings.Config.OperationsConfig.Aws;
 
             try
             {
                 if (dynamicAwsConfig != null)
                 {
-                    if (string.IsNullOrWhiteSpace(_options.InstanceRequest.KeyName) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PublicKeyName)) _options.InstanceRequest.KeyName = dynamicAwsConfig.PublicKeyName;
                     if (string.IsNullOrWhiteSpace(_options.PrivateKeyFileLocation) && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.PrivateKeyFileLocation)) _options.PrivateKeyFileLocation = dynamicAwsConfig.PrivateKeyFileLocation;
                     if (_options.RegionEndpoint == null && !string.IsNullOrWhiteSpace((string)dynamicAwsConfig.Region)) _options.RegionEndpoint = RegionEndpoint.GetBySystemName((string)dynamicAwsConfig.Region);
 
@@ -67,11 +54,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
                         }
                     }
                 }
-
-                if (dynamicBootstrapConfig != null)
-                {
-                    if (string.IsNullOrWhiteSpace(_options.InstanceRequest.SubnetId) && !string.IsNullOrWhiteSpace((string)dynamicBootstrapConfig.SubnetId)) _options.InstanceRequest.SubnetId = dynamicBootstrapConfig.SubnetId;
-                }
+                
             }
             catch (RuntimeBinderException binderException)
             {
@@ -80,17 +63,11 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
                         GetType().Name), binderException);
             }
         }
-
-        private void ValidateMandatoryOptions(AwsTerminateOptionsValues options)
+        protected void ValidateMandatoryOptions(IOfferAwsOperationsOptionValues options)
         {
             if (string.IsNullOrWhiteSpace(options.PrivateKeyFileLocation)) throw new OperationConfigException(string.Format("Missing value for PrivateKeyFileLocation. Please specify in code or in config."));
             if (options.RegionEndpoint == null) throw new OperationConfigException(string.Format("Missing value for Region. Please specify in code or in config."));
             if (options.Credentials == null) throw new OperationConfigException(string.Format("Missing value for Credentials. Please specify in code or in config."));
-        }
-
-        public override string Name
-        {
-            get { return "Aws Terminate Instance"; }
         }
     }
 }

@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Amazon.DeviceFarm.Model;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
@@ -91,6 +91,29 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             }
         }
 
+        internal void Stop(string bootstrapId)
+        {
+            Logger.Info("Stopping instances");
+            var instanceRequest = new DescribeInstancesRequest
+            {
+                Filters = new[]
+                {
+                    new Filter
+                    {
+                        Name = "client-token",
+                        Values = new[] {bootstrapId}.ToList()
+                    }
+                }.ToList()
+            };
+            var instances = _client.DescribeInstances(instanceRequest);
+
+            var stopRequest = new StopInstancesRequest();
+            var instanceIds = instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId)).ToList();
+            stopRequest.InstanceIds.AddRange(instanceIds);
+            _client.StopInstances(stopRequest);
+            Logger.WithLogSection("Waiting for instances to stop", () => WaitForInstancesToStop(instanceIds));
+        }
+
         public void Terminate(string bootstrapId)
         {
             Logger.Info("Terminating instances");
@@ -117,23 +140,13 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
         private void WaitForInstancesToTerminate(List<string> instanceIds)
         {
-            var instances = GetInstances(instanceIds).ToList();
-            var states = instances.Select(y => y.State);
-
-            Logger.WithLogSection("Status of instances", () =>
-            {
-                foreach (var instance in instances)
-                {
-                    Logger.Info("Instance Id: {0}  Status: {1}", instance.InstanceId, instance.State.Name);
-                }
-            });
-
-            if (states.Any(x => x.Name != "terminated"))
-            {
-                Thread.Sleep(5000);
-                WaitForInstancesToTerminate(instanceIds);
-            }
+            WaitForInstancesStatus(instanceIds, Ec2InstanceState.Terminated);
         }
+        private void WaitForInstancesToStop(List<string> instanceIds)
+        {
+            WaitForInstancesStatus(instanceIds, Ec2InstanceState.Stopped );
+        }
+
 
         public void TagInstances(List<string> instanceIds, List<KeyValuePair<string, string>> tags)
         {

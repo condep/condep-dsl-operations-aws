@@ -2,7 +2,7 @@ using Amazon.EC2.Model;
 
 namespace ConDep.Dsl
 {
-    internal class Ec2Instance
+    public class Ec2Instance
     {
         public string InstanceId { get; set; }
         public string UserName { get; set; }
