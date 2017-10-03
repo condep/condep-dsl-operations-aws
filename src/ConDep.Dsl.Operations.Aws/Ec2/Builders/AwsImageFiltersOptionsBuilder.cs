@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {
-    internal class AwsFiltersOptionsBuilder : IOfferAwsFilterOptions
+    public class AwsFiltersOptionsBuilder : IOfferAwsFilterOptions
     {
         static List<string> ValidNames = new List<string>(new string[]
         {
@@ -28,14 +29,14 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
         }
         public IOfferAwsFilterOptions Add(string name, string value)
         {
-            validateName(name);
+            ValidateName(name);
             this._filters.Add(new Filter(name, new List<string>(new string[] { value })));
             return this;
         }
 
-        private void validateName(string name)
+        private void ValidateName(string name)
         {
-            if(!ValidTagNameRegex.Match(name).Success || !ValidNames.Contains(name))
+            if(!ValidTagNameRegex.Match(name).Success && !ValidNames.Contains(name))
             {
                 throw new FilterNameValidationException($"{name} is not a valid name for a filter");
             }
