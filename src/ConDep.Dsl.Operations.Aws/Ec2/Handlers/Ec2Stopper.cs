@@ -1,16 +1,18 @@
-using Amazon.EC2;
+﻿using Amazon.EC2;
+using Amazon.EC2.Model;
 using ConDep.Dsl.Operations.Aws.Ec2.Handlers;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
+using System.Collections.Generic;
 
-namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
+namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 {
-    public class Ec2Terminator
+    public class Ec2Stopper
     {
-        private readonly AwsTerminateOptionsValues _options;
+        private readonly AwsStopOptionsValues _options;
         private readonly IAmazonEC2 _client;
         private readonly Ec2InstanceHandler _instanceHandler;
 
-        public Ec2Terminator(AwsTerminateOptionsValues options)
+        public Ec2Stopper(AwsStopOptionsValues options)
         {
             _options = options;
             var config = new AmazonEC2Config { RegionEndpoint = _options.RegionEndpoint };
@@ -18,10 +20,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Terminate
             _instanceHandler = new Ec2InstanceHandler(_client);
         }
 
-        public void Terminate()
+        public IEnumerable<Instance> Stop()
         {
             var bootstrapId = _options.InstanceRequest.ClientToken;
-            _instanceHandler.Terminate(bootstrapId);
+            IEnumerable<Instance> instances = _instanceHandler.GetInstances(bootstrapId);
+            _instanceHandler.Stop(bootstrapId);
+            return instances;
         }
     }
 }

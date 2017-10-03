@@ -5,7 +5,7 @@ using ConDep.Dsl.Operations.Aws;
 using ConDep.Dsl.Operations.Aws.Ec2;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
-using ConDep.Dsl.Operations.Aws.Ec2.Terminate;
+using ConDep.Dsl.Operations.Aws.Ec2.Operations;
 
 namespace ConDep.Dsl
 {
@@ -49,7 +49,7 @@ namespace ConDep.Dsl
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
         /// In AWS this is refered to as the Client Token.</param>
         /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
+        public static Result CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -57,7 +57,7 @@ namespace ConDep.Dsl
             var awsBootstrapOperation = new AwsBootstrapOperation(options);
 
             OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace ConDep.Dsl
         /// <param name="tags">Tags to use as identifiers to ensure the idempotency of the bootstrap operation. 
         /// Make sure that the tag(s) used uniquely identifies instances you want to manage by your ConDep operation.</param>
         /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags)
+        public static Result CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags)
         {            
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -78,7 +78,7 @@ namespace ConDep.Dsl
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
 
             OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace ConDep.Dsl
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation.</param>
         /// <param name="options">Additional configuration options for bootstrapping instances.</param>
         /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId, Action<IOfferAwsBootstrapOptions> options)
+        public static Result CreateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId, Action<IOfferAwsBootstrapOptions> options)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -100,7 +100,7 @@ namespace ConDep.Dsl
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
 
             OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace ConDep.Dsl
         /// <param name="tags">EC2 tags to make the instances created identifiable and therefore idempotent</param>
         /// <param name="options">Additional configuration options for bootstrapping instances.</param>
         /// <returns></returns>
-        public static IOfferAwsOperations CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsBootstrapOptions> options)
+        public static Result CreateInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsBootstrapOptions> options)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -122,7 +122,7 @@ namespace ConDep.Dsl
 
             var awsBootstrapOperation = new AwsBootstrapOperation(instanceOptions.Values);
             OperationExecutor.Execute((LocalBuilder)ec2, awsBootstrapOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace ConDep.Dsl
         /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
         /// In AWS this is refered to as the Client Token.</param>
         /// <returns></returns>
-        public static IOfferAwsOperations TerminateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
+        public static Result TerminateInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -140,7 +140,7 @@ namespace ConDep.Dsl
             var awsTerminateOperation = new AwsTerminateOperation(options);
 
             OperationExecutor.Execute((LocalBuilder)ec2, awsTerminateOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace ConDep.Dsl
         /// <param name="ec2"></param>
         /// <param name="tags">The tags to match</param>
         /// <returns></returns>
-        public static IOfferAwsOperations DiscoverInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsEc2DiscoverOptions> options = null)
+        public static Result DiscoverInstances(this IOfferAwsEc2Operations ec2, Action<IOfferAwsTagOptions> tags, Action<IOfferAwsEc2DiscoverOptions> options = null)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
@@ -165,28 +165,70 @@ namespace ConDep.Dsl
 
             var awsEc2DiscoverOperation = new AwsEc2DiscoverOperation(tagValues, awsOptions.Values);
             OperationExecutor.Execute((LocalBuilder)ec2, awsEc2DiscoverOperation);
-            return ec2Builder.AwsOperations;
+            return ec2Builder.Result;
+        }
+        /// <summary>
+        /// Stops the instances that are bootstrapped with the given bootstrap-ID.
+        /// </summary>
+        /// <param name="ec2"></param>
+        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
+        /// In AWS this is refered to as the Client Token.</param>
+        /// <returns></returns>
+        public static Result StopInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
+        {
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+
+            var options = new AwsStopOptionsValues(bootstrapId);
+            var awsStopOperation = new AwsStopOperation(options);
+
+            OperationExecutor.Execute((LocalBuilder)ec2, awsStopOperation);
+            return ec2Builder.Result;
         }
 
-        //public static IOfferAwsOperations StopInstances(this IOfferAwsEc2Operations ec2)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public static Result StartInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
+        {
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
 
-        //public static IOfferAwsOperations StartInstances(this IOfferAwsEc2Operations ec2)
-        //{
-        //    throw new NotImplementedException();
-        //}
+            var options = new AwsStartOptionsValues(bootstrapId);
+            var awsStartOperation = new AwsStartOperation(options);
 
-        //public static IOfferAwsOperations CreateImage(this IOfferAwsEc2Operations ec2)
-        //{
-        //    throw new NotImplementedException();
-        //}
+            OperationExecutor.Execute((LocalBuilder)ec2, awsStartOperation);
 
-        //public static IOfferAwsOperations DeleteImage(this IOfferAwsEc2Operations ec2)
-        //{
-        //    throw new NotImplementedException();
-        //}
+            return ec2Builder.Result;
+        }
+
+        public static Result CreateImage(this IOfferAwsEc2Operations ec2, string instanceId, string imageName, Action<IOfferAwsImageCreateOptions> options = null)
+        {
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+
+            var imageOptions = new AwsImageCreateOptionsBuilder(instanceId, imageName);
+            options?.Invoke(imageOptions);
+
+            var awsCreateImageOperation = new AwsCreateImageOperation(imageOptions.Values);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsCreateImageOperation);
+            return ec2Builder.Result;
+        }
+
+        /// <summary>
+        /// Deregister images based on a filter
+        /// </summary>
+        /// <param name="ec2"></param>
+        /// <param name="filterOptions">Filter to describe images to deregister</param>
+        /// <returns></returns>
+        public static Result DeregisterImages(this IOfferAwsEc2Operations ec2, Action<IOfferAwsImageDescribeOptions> filterOptions, Action<IOfferAwsImageDeregisterOptions> deregisterOptions = null)
+        {
+
+            var ec2Builder = ec2 as AwsEc2OperationsBuilder;
+            var imageDescribeOptions = new AwsImageDescribeOptionsBuilder();
+            filterOptions.Invoke(imageDescribeOptions);
+
+            var imageDeregisterOptions = new AwsImageDeregisterOptionsBuilder();
+            deregisterOptions?.Invoke(imageDeregisterOptions);
+
+            var awsDeregisterImagesOperation = new AwsDeregisterImagesOperation(imageDescribeOptions.Values, imageDeregisterOptions.Values);
+            OperationExecutor.Execute((LocalBuilder)ec2, awsDeregisterImagesOperation);
+            return ec2Builder.Result;
+        }
 
         //public static IOfferAwsOperations CreateKeyPair(this IOfferAwsEc2Operations ec2, string name)
         //{

@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Amazon.DeviceFarm.Model;
 using Amazon.EC2;
 using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
@@ -91,9 +91,42 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             }
         }
 
+        internal void Stop(string bootstrapId)
+        {
+            Logger.Info("Stopping instances");
+            IEnumerable<string> instanceIds = FindInstanceIdsFromBootstrapId(bootstrapId);
+
+            var stopRequest = new StopInstancesRequest();
+            stopRequest.InstanceIds.AddRange(instanceIds);
+
+            _client.StopInstances(stopRequest);
+            Logger.WithLogSection("Waiting for instances to stop", () => WaitForInstancesToStop(instanceIds));
+        }
+
         public void Terminate(string bootstrapId)
         {
             Logger.Info("Terminating instances");
+            IEnumerable<string> instanceIds = FindInstanceIdsFromBootstrapId(bootstrapId);
+
+            var terminationRequest = new TerminateInstancesRequest();
+            terminationRequest.InstanceIds.AddRange(instanceIds);
+
+            _client.TerminateInstances(terminationRequest);
+            Logger.WithLogSection("Waiting for instances to terminate", () => WaitForInstancesToTerminate(instanceIds));
+        }
+        public void Start(string bootstrapId)
+        {
+            Logger.Info("Starting instances");
+            StartInstancesRequest startRequest = new StartInstancesRequest();
+            IEnumerable<string> instanceIds = FindInstanceIdsFromBootstrapId(bootstrapId);
+            startRequest.InstanceIds.AddRange(instanceIds);
+
+            _client.StartInstances(startRequest);
+            Logger.WithLogSection("Waiting for instances to start running", () => WaitForInstancesToRun(instanceIds));
+        }
+
+        private IEnumerable<string> FindInstanceIdsFromBootstrapId(string bootstrapId)
+        {
             var instanceRequest = new DescribeInstancesRequest
             {
                 Filters = new[]
@@ -106,34 +139,22 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 }.ToList()
             };
             var instances = _client.DescribeInstances(instanceRequest);
-
-            var terminationRequest = new TerminateInstancesRequest();
-            var instanceIds = instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId)).ToList();
-            terminationRequest.InstanceIds.AddRange(instanceIds);
-
-            _client.TerminateInstances(terminationRequest);
-            Logger.WithLogSection("Waiting for instances to terminate", () => WaitForInstancesToTerminate(instanceIds));
+            return instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId)).ToList();
         }
 
-        private void WaitForInstancesToTerminate(List<string> instanceIds)
+        private void WaitForInstancesToTerminate(IEnumerable<string> instanceIds)
         {
-            var instances = GetInstances(instanceIds).ToList();
-            var states = instances.Select(y => y.State);
-
-            Logger.WithLogSection("Status of instances", () =>
-            {
-                foreach (var instance in instances)
-                {
-                    Logger.Info("Instance Id: {0}  Status: {1}", instance.InstanceId, instance.State.Name);
-                }
-            });
-
-            if (states.Any(x => x.Name != "terminated"))
-            {
-                Thread.Sleep(5000);
-                WaitForInstancesToTerminate(instanceIds);
-            }
+            WaitForInstancesStatus(instanceIds, Ec2InstanceState.Terminated);
         }
+        private void WaitForInstancesToStop(IEnumerable<string> instanceIds)
+        {
+            WaitForInstancesStatus(instanceIds, Ec2InstanceState.Stopped );
+        }
+        private void WaitForInstancesToRun(IEnumerable<string> instanceIds)
+        {
+            WaitForInstancesStatus(instanceIds, Ec2InstanceState.Running);
+        }
+
 
         public void TagInstances(List<string> instanceIds, List<KeyValuePair<string, string>> tags)
         {

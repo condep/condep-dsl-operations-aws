@@ -13,6 +13,7 @@ using ConDep.Dsl.Validation;
 using ConDep.Execution;
 using ConDep.Execution.Validation;
 using Microsoft.CSharp.RuntimeBinder;
+using System.Collections.Generic;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2
 {
@@ -32,9 +33,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
 
             var bootstrapper = new Ec2Bootstrapper(_options, settings);
             var ec2Config = bootstrapper.Boostrap();
-
+            var instances = new List<Ec2Instance>();
             foreach (var instance in ec2Config.Instances)
             {
+                instances.Add(instance);
                 settings.Config.Servers.Add(new ServerConfig
                 {
                     DeploymentUser = new DeploymentUserConfig
@@ -55,7 +57,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             }
 
             ConDepConfigurationExecutor.ExecutePreOps(settings, token);
-            return Result.SuccessChanged();
+            var result = Result.SuccessChanged();
+            result.Data.Instances = instances;
+            return result;
         }
 
 
