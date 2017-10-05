@@ -91,6 +91,22 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             }
         }
 
+        internal void WaitForInstanceToReachOneOfStates(string instanceId, ICollection<Ec2InstanceState> states)
+        {
+
+            Logger.Info(
+                "Waiting for instance {0}  to reach one of the states {1}",
+                instanceId,
+                string.Join(", ", states.Select(s => Enum.GetName(typeof(Ec2InstanceState), s)))
+                );
+            Instance instance = null;
+            while (!states.Select(s => (int)s).Contains((instance = GetInstances(new List<string> { instanceId }).Single()).State.Code))
+            {
+                Logger.Verbose("Instance Id: {0}  Status: {1}", instanceId, instance.State.Code);
+                Thread.Sleep(15000);
+            }
+        }
+
         internal void Stop(string bootstrapId)
         {
             Logger.Info("Stopping instances");

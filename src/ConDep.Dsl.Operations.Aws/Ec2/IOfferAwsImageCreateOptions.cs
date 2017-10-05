@@ -5,5 +5,7 @@
         IOfferAwsImageCreateOptions Description(string description);
         IOfferAwsImageCreateOptions NoReboot(bool noReboot);
         IOfferAwsImageCreateDisksOptions Disks { get; }
+
+        IOfferAwsImageCreateOptions WaitForShutdown(bool waitForShutdown);
     }
 }

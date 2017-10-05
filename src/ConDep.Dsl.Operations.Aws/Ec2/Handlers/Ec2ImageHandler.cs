@@ -48,10 +48,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
     internal class Ec2ImageHandler
     {
         private readonly IAmazonEC2 _client;
+        private readonly Ec2InstanceHandler _instanceHandler;
 
         public Ec2ImageHandler(IAmazonEC2 client)
         {
             _client = client;
+            _instanceHandler = new Ec2InstanceHandler(_client);
         }
 
         public string Create(AwsImageCreateOptionsValues options)
@@ -59,6 +61,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             Logger.Info($"Creating AMI {options.ImageRequest.Name} from instance {options.ImageRequest.InstanceId}");
             try
             {
+                var requiredStartingStates = new List<Ec2InstanceState> { Ec2InstanceState.Stopped };
+                if (!options.WaitForShutdown)
+                    requiredStartingStates.Add(Ec2InstanceState.Running);
+                _instanceHandler.WaitForInstanceToReachOneOfStates(options.ImageRequest.InstanceId, requiredStartingStates);
                 var response = _client.CreateImage(options.ImageRequest);
                 WaitForImageToReachState(response.ImageId, "available");
                 return response.ImageId;
@@ -67,12 +73,20 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 throw new CouldNotCreateAMIException($"Could not create image from instance {options.ImageRequest.InstanceId}: {e.Message}"); // Do we get any additional information about the error?
             }
         }
-
-
+        
         private void WaitForImageToReachState(string imageId, string state)
         {
             Image image = null;
             while ((image = GetImage(imageId)).State.Value != state)
+            {
+                Logger.Info("Image Id: {0}  Status: {1}", imageId, image.State.Value);
+                Thread.Sleep(10000);
+            }
+        }
+        private void WaitForImageToReachOneOfStates(string imageId, IEnumerable<string> states)
+        {
+            Image image = null;
+            while (!states.Contains((image = GetImage(imageId)).State.Value))
             {
                 Logger.Info("Image Id: {0}  Status: {1}", imageId, image.State.Value);
                 Thread.Sleep(10000);
