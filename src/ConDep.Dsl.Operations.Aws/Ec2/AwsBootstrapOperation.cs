@@ -78,7 +78,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2
             if (options.InstanceRequest.Placement == null) throw new OperationConfigException(string.Format("Missing value for AvailabilityZone. Please specify in code or in config."));
             if (options.InstanceRequest.SecurityGroupIds.Count == 0) Logger.Warn("No value for SecurityGroupIds given. Default Security Group will be used.");
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.SubnetId)) Logger.Warn("No value for SubnetId given. Default Subnet will be used."); 
-            if (!options.Image.HasImageId() && !options.Image.HasLatestImageDefined()) Logger.Warn("No value for Image given. Latest defined Windows Image will be used.");
+            if (!options.Image.HasImageFilter() &&  !options.Image.HasImageId() && !options.Image.HasLatestImageDefined()) Logger.Warn("No value for Image given. Latest defined Windows Image will be used.");
             if (string.IsNullOrWhiteSpace(options.InstanceRequest.InstanceType)) Logger.Warn("No value for InstanceType given. Default Instance Type will be used.");
         }
 

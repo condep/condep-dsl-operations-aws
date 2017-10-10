@@ -77,6 +77,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                         throw new Exception("Image " + imageValues.LatestImage + " currently not supported. Please specify image id as a string instead.");
                 }
             }
+            else if(imageValues.HasImageFilter())
+            {
+                _options.InstanceRequest.ImageId = amiLocator.FindWithFilters(imageValues.Filters, imageValues.FilterByOwner);
+            }
             else
             {
                 _options.InstanceRequest.ImageId = amiLocator.Find2012R2Core();

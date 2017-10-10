@@ -1,4 +1,4 @@
-using ConDep.Dsl;
+using System;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
 {
@@ -16,6 +16,13 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
         public IOfferAwsBootstrapOptions LatestBaseWindowsImage(AwsWindowsImage image)
         {
             _values.LatestImage = image;
+            return _bootstrapOptions;
+        }
+
+        public IOfferAwsBootstrapOptions LatestMatching(Action<IOfferAwsImageFilterOptions> filter)
+        {
+            var searchFilter = new AwsImageFiltersOptionsBuilder(_values);
+            filter(searchFilter);
             return _bootstrapOptions;
         }
 

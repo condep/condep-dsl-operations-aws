@@ -1,7 +1,7 @@
-﻿namespace ConDep.Dsl
+﻿namespace ConDep.Dsl.Operations.Aws.Ec2
 {
-    public interface IOfferAwsFilterOptions
+    public interface IOfferAwsImageFilterOptions : IOfferAwsFilterOptions
     {
-        IOfferAwsFilterOptions Add(string key, string value);
+        void Owner(string owner);
     }
 }
