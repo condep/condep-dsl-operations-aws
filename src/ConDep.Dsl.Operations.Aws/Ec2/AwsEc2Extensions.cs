@@ -168,10 +168,10 @@ namespace ConDep.Dsl
             return ec2Builder.Result;
         }
         /// <summary>
-        /// Stops the instances that are bootstrapped with the given bootstrap-ID.
+        /// Stops the instances that are identified by the given bootstrap id.
         /// </summary>
         /// <param name="ec2"></param>
-        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to ensure the idempotency of the bootstrap operation. 
+        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to identify the instances to stop. 
         /// In AWS this is refered to as the Client Token.</param>
         /// <returns></returns>
         public static Result StopInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
@@ -185,6 +185,13 @@ namespace ConDep.Dsl
             return ec2Builder.Result;
         }
 
+        /// <summary>
+        /// Starts the instances that are identified by the given bootstrap id.
+        /// </summary>
+        /// <param name="ec2"></param>
+        /// <param name="bootstrapId">Unique, case-sensitive identifier you provide to identify the instances to start. 
+        /// In AWS this is refered to as the Client Token.</param>
+        /// <returns></returns>
         public static Result StartInstances(this IOfferAwsEc2Operations ec2, string bootstrapId)
         {
             var ec2Builder = ec2 as AwsEc2OperationsBuilder;

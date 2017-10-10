@@ -34,5 +34,6 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Model
         public AWSCredentials Credentials { get; set; }
         public string PrivateKeyFileLocation { get; set; }
         public RegionEndpoint RegionEndpoint { get; set; }
+        public bool WaitForShutdown { get; internal set; }
     }
 }

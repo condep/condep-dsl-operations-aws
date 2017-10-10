@@ -77,6 +77,10 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                         throw new Exception("Image " + imageValues.LatestImage + " currently not supported. Please specify image id as a string instead.");
                 }
             }
+            else if(imageValues.HasImageFilter())
+            {
+                _options.InstanceRequest.ImageId = amiLocator.FindWithFilters(imageValues.Filters, imageValues.FilterByOwner);
+            }
             else
             {
                 _options.InstanceRequest.ImageId = amiLocator.Find2012R2Core();
@@ -109,9 +113,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                 config.Instances.Add(new Ec2Instance
                 {
                     InstanceId = instance.InstanceId,
-                    UserName = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.UserName :  @".\Administrator",
+                    UserName = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.UserName : @".\Administrator",
                     Password = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.Password : passwords.Single(x => x.Item1 == instance.InstanceId).Item2,
-                    ManagementAddress = GetManagementAddress(_options, instance)
+                    ManagementAddress = GetManagementAddress(instance)
                 });
             }
 
@@ -163,67 +167,16 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                     UserName = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.UserName : ".\\Administrator",
                     Password = _conDepSettings.Config.DeploymentUser.IsDefined() ? _conDepSettings.Config.DeploymentUser.Password : existingPasswords.Single(x => x.Item1 == instance.InstanceId).Item2,
                     AwsInstance = instance,
-                    ManagementAddress = GetManagementAddress(_options, instance)
+                    ManagementAddress = GetManagementAddress(instance)
                 });
             }
             return config;
         }
 
-        private string GetManagementAddress(AwsBootstrapOptionsValues options, Instance instance)
+        private string GetManagementAddress(Instance instance)
         {
-            var mngmntInterface = GetManagementInterface(options, instance);
-
-            if (options.ManagementAddressType != null)
-            {
-                switch (options.ManagementAddressType)
-                {
-                    case RemoteManagementAddressType.PublicDns:
-                        if(mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicDnsName)) throw new ConDepInvalidSetupException("Instance has no public DNS name.");
-                        return mngmntInterface.Association.PublicDnsName;
-                    case RemoteManagementAddressType.PublicIp:
-                        if(mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicIp)) throw new ConDepInvalidSetupException("Instance has no public IP.");
-                        return mngmntInterface.Association.PublicIp;
-                    case RemoteManagementAddressType.PrivateDns:
-                        if(string.IsNullOrWhiteSpace(mngmntInterface.PrivateDnsName)) throw new ConDepInvalidSetupException("Instance has no private DNS name.");
-                        return mngmntInterface.PrivateDnsName;
-                    case RemoteManagementAddressType.PrivateIp:
-                        return mngmntInterface.PrivateIpAddress;
-                }
-            }
-            else
-            {
-                if (mngmntInterface.Association != null && !string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicDnsName))
-                {
-                    return mngmntInterface.Association.PublicDnsName;
-                }
-                if (mngmntInterface.Association != null && !string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicIp))
-                {
-                    return mngmntInterface.Association.PublicIp;
-                }
-                if (!string.IsNullOrWhiteSpace(mngmntInterface.PrivateIpAddress))
-                {
-                    return mngmntInterface.PrivateIpAddress;
-                }
-                if (!string.IsNullOrWhiteSpace(mngmntInterface.PrivateDnsName))
-                {
-                    return mngmntInterface.PrivateDnsName;
-                }
-            }
-            throw new Exception("No remote management address found.");
+            return _instanceHandler.GetManagementAddress(instance, _options.ManagementAddressType, _options.NetworkInterfaceValues.RemoteManagementInterfaceIndex);
         }
-
-        private static InstanceNetworkInterface GetManagementInterface(AwsBootstrapOptionsValues options, Instance instance)
-        {
-            if (options.InstanceRequest.NetworkInterfaces.Count > 0)
-            {
-                if (options.NetworkInterfaceValues.RemoteManagementInterfaceIndex != null)
-                {
-                    return instance.NetworkInterfaces[options.NetworkInterfaceValues.RemoteManagementInterfaceIndex.Value];
-                }
-            }
-            return instance.NetworkInterfaces[0];
-        }
-
 
         private static void HaveAccessToServers(Ec2BootstrapConfig config)
         {

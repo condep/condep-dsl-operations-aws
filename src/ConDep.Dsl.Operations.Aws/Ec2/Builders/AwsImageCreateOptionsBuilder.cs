@@ -33,6 +33,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Builders
             _values.ImageRequest.NoReboot = noReboot;
             return this;
         }
+
+        public IOfferAwsImageCreateOptions WaitForShutdown(bool waitForShutdown)
+        {
+            _values.WaitForShutdown = waitForShutdown;
+            return this;
+        }
         public AwsImageCreateOptionsValues Values { get { return _values; } }
     }
 }

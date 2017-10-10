@@ -96,5 +96,21 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             var dateString = name.Substring(name.Length - 10);
             return DateTime.ParseExact(dateString, "yyyy.MM.dd", null);
         }
+
+        internal string FindWithFilters(List<Filter> filters, string filterByOwner = null)
+        {
+
+            var request = new DescribeImagesRequest();
+            if(filterByOwner != null)
+                request.ExecutableUsers.Add(filterByOwner);
+            request.Filters = filters;
+
+            var results = _client.DescribeImages(request);
+            if (results.Images.Count == 0)
+                throw new Exception("Could not find any images matching filter");
+            var image = results.Images.Count > 1 ? results.Images.OrderByDescending(x => DateTime.Parse(x.CreationDate)).First() : results.Images.Single();
+            Logger.Info("Found image with id {0}, dated {1}", image.ImageId, DateTime.Parse(image.CreationDate).ToString("yyyy-MM-dd"));
+            return image.ImageId;
+        }
     }
 }
