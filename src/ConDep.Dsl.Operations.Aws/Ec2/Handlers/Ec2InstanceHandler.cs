@@ -7,6 +7,7 @@ using Amazon.EC2.Model;
 using ConDep.Dsl.Logging;
 using ConDep.Dsl.Operations.Aws.Ec2.Builders;
 using ConDep.Dsl.Operations.Aws.Ec2.Model;
+using ConDep.Dsl.Validation;
 
 namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 {
@@ -65,7 +66,7 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             var instances = _client.DescribeInstances(request);
             Logger.Info("Found instances: {0}", string.Join(", ", instances.Reservations.SelectMany(x => x.Instances.Select(y => y.InstanceId + "(" + y.State.Name + ")"))));
             return instances.Reservations.SelectMany(x => x.Instances).Where(x => x.State.Name != "terminated");
-        } 
+        }
 
         private IEnumerable<Filter> CreateIdempotencyTagsFilter(IEnumerable<KeyValuePair<string, string>> idempotencyTags)
         {
@@ -178,6 +179,61 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
 
             var request = new CreateTagsRequest(instanceIds, tags.Select(x => new Tag(x.Key, x.Value)).ToList());
             _client.CreateTags(request);
+        }
+
+        public string GetManagementAddress(Instance instance, RemoteManagementAddressType? managementAddressType = null, int? remoteManagementInterfaceIndex = null)
+        {
+            var mngmntInterface = GetManagementInterface(instance, remoteManagementInterfaceIndex);
+
+            if (managementAddressType != null)
+            {
+                switch (managementAddressType)
+                {
+                    case RemoteManagementAddressType.PublicDns:
+                        if (mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicDnsName)) throw new ConDepInvalidSetupException("Instance has no public DNS name.");
+                        return mngmntInterface.Association.PublicDnsName;
+                    case RemoteManagementAddressType.PublicIp:
+                        if (mngmntInterface.Association == null || string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicIp)) throw new ConDepInvalidSetupException("Instance has no public IP.");
+                        return mngmntInterface.Association.PublicIp;
+                    case RemoteManagementAddressType.PrivateDns:
+                        if (string.IsNullOrWhiteSpace(mngmntInterface.PrivateDnsName)) throw new ConDepInvalidSetupException("Instance has no private DNS name.");
+                        return mngmntInterface.PrivateDnsName;
+                    case RemoteManagementAddressType.PrivateIp:
+                        return mngmntInterface.PrivateIpAddress;
+                }
+            }
+            else
+            {
+                if (mngmntInterface.Association != null && !string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicDnsName))
+                {
+                    return mngmntInterface.Association.PublicDnsName;
+                }
+                if (mngmntInterface.Association != null && !string.IsNullOrWhiteSpace(mngmntInterface.Association.PublicIp))
+                {
+                    return mngmntInterface.Association.PublicIp;
+                }
+                if (!string.IsNullOrWhiteSpace(mngmntInterface.PrivateIpAddress))
+                {
+                    return mngmntInterface.PrivateIpAddress;
+                }
+                if (!string.IsNullOrWhiteSpace(mngmntInterface.PrivateDnsName))
+                {
+                    return mngmntInterface.PrivateDnsName;
+                }
+            }
+            throw new Exception("No remote management address found.");
+        }
+
+        private static InstanceNetworkInterface GetManagementInterface(Instance instance, int? remoteManagementInterfaceIndex = null)
+        {
+            if(instance.NetworkInterfaces.Count > 0)
+            {
+                if(remoteManagementInterfaceIndex != null)
+                {
+                    return instance.NetworkInterfaces[remoteManagementInterfaceIndex.Value];
+                }
+            }
+            return instance.NetworkInterfaces[0];
         }
     }
 }
