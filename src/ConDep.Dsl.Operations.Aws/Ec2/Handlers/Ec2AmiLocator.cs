@@ -43,6 +43,12 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
             var result = GetSearchResults("Windows_Server-2008-R2_SP1-English-64Bit-Base*");
             return result.ImageId;
         }
+        public string Find2016Core()
+        {
+            Logger.Info("Finding Amazon AMI image for Windows Server 2016...");
+            var result = GetSearchResults("Windows_Server-2016-English-Full-Base-*");
+            return result.ImageId;
+        }
 
         public string Find(string name)
         {
