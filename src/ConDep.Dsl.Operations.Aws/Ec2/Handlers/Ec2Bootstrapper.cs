@@ -73,6 +73,9 @@ namespace ConDep.Dsl.Operations.Aws.Ec2.Handlers
                     case AwsWindowsImage.Win2012R2:
                         _options.InstanceRequest.ImageId = amiLocator.Find2012R2Core();
                         break;
+                    case AwsWindowsImage.Win2016:
+                        _options.InstanceRequest.ImageId = amiLocator.Find2016Core();
+                        break;
                     default:
                         throw new Exception("Image " + imageValues.LatestImage + " currently not supported. Please specify image id as a string instead.");
                 }
