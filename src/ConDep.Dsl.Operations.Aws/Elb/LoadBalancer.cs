@@ -10,6 +10,7 @@ using Amazon.ElasticLoadBalancing;
 using Amazon.ElasticLoadBalancing.Model;
 using Amazon.Runtime;
 using ConDep.Dsl.Config;
+using ConDep.Dsl.LoadBalancer;
 using ConDep.Dsl.Logging;
 using Microsoft.CSharp.RuntimeBinder;
 using Instance = Amazon.ElasticLoadBalancing.Model.Instance;
@@ -55,6 +56,11 @@ namespace ConDep.Dsl.Operations.Aws.Elb
             result.Data.HttpStatusCode = response.HttpStatusCode;
             result.Data.ActiveInstances = response.Instances;
             return result;
+        }
+
+        public LoadBalanceState GetServerState(string serverName, string farm)
+        {
+            throw new NotImplementedException();
         }
 
         public string GetInstanceId(AmazonEC2Client client, string serverName)
