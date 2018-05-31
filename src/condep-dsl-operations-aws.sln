@@ -7,6 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConDep.Dsl.Operations.Aws",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{A1281FEC-4957-4C3E-8E55-4FCE90F8AFA0}"
 	ProjectSection(SolutionItems) = preProject
+		..\appveyor.yml = ..\appveyor.yml
 		..\build\bootstrapper.ps1 = ..\build\bootstrapper.ps1
 		..\build\build.cake = ..\build\build.cake
 		..\build\build.ps1 = ..\build\build.ps1
@@ -31,5 +32,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4A7CA266-1000-457C-800A-AC869344834A}
 	EndGlobalSection
 EndGlobal
